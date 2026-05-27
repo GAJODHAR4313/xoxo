@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react'; // Added useEffect here
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'; // Added useNavigate
+import React, { useState, useEffect } from 'react'; 
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'; 
 import { AnimatePresence } from 'framer-motion';
-import { CartProvider } from './Context/CartContext'; 
+// Yahan Context ko context (small c) kar diya hai
+import { CartProvider } from './context/CartContext'; 
 
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -23,14 +24,13 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false); 
   const [isWishlistOpen, setIsWishlistOpen] = useState(false); 
   const location = useLocation();
-  const navigate = useNavigate(); // Navigation ke liye
+  const navigate = useNavigate(); 
 
-  // --- REFRESH PAR HOME PAR BHEJNE KA LOGIC ---
   useEffect(() => {
     if (location.pathname !== '/') {
       navigate('/', { replace: true });
     }
-  }, []); // Sirf mount (refresh) par chalega
+  }, []); 
 
   return (
     <CartProvider>
