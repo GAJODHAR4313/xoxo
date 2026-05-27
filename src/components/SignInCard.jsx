@@ -9,7 +9,6 @@ const SignInCard = ({ onClose, onLoginSuccess, onSwitch, isAdminMode }) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   
-  // Yahan se auto-fill hata diya hai
   const [formData, setFormData] = useState({ 
     email: '', 
     password: '' 
@@ -21,7 +20,8 @@ const SignInCard = ({ onClose, onLoginSuccess, onSwitch, isAdminMode }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:5001/api/auth/login', formData);
+      // Yahan Render ka link add kiya hai
+      const res = await axios.post('https://xoxo-backend-hoiu.onrender.com/api/auth/login', formData);
       onLoginSuccess(res.data.user);
       onClose();
     } catch (err) { alert(isAdminMode ? "Admin Access Denied" : "Invalid Credentials"); }
@@ -32,7 +32,8 @@ const SignInCard = ({ onClose, onLoginSuccess, onSwitch, isAdminMode }) => {
     if(!resetData.email) return alert("ENTER EMAIL");
     setLoading(true);
     try {
-      await axios.post('http://localhost:5001/api/auth/forgot-password-otp', { email: resetData.email });
+      // Yahan Render ka link add kiya hai
+      await axios.post('https://xoxo-backend-hoiu.onrender.com/api/auth/forgot-password-otp', { email: resetData.email });
       setStep(2);
     } catch (err) { alert("USER NOT FOUND"); }
     setLoading(false);
@@ -41,7 +42,8 @@ const SignInCard = ({ onClose, onLoginSuccess, onSwitch, isAdminMode }) => {
   const handleResetPassword = async () => {
     setLoading(true);
     try {
-      await axios.post('http://localhost:5001/api/auth/reset-password', resetData);
+      // Yahan Render ka link add kiya hai
+      await axios.post('https://xoxo-backend-hoiu.onrender.com/api/auth/reset-password', resetData);
       alert("PASSWORD UPDATED. PLEASE LOGIN.");
       setIsForgotMode(false);
       setStep(1);

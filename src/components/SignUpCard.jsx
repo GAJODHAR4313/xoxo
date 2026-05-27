@@ -6,24 +6,24 @@ const SignUpCard = ({ onClose, onSwitch }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
-  const [isOtpSent, setIsOtpSent] = useState(false); // OTP section toggle
+  const [isOtpSent, setIsOtpSent] = useState(false); 
   const [loading, setLoading] = useState(false); 
   const [status, setStatus] = useState({ type: '', msg: '' }); 
 
-  // STEP 1: Pehle sirf OTP bhejne ka kaam hoga
   const handleSendOtp = async (e) => {
     e.preventDefault();
     setLoading(true);
     setStatus({ type: '', msg: '' });
     try {
-      const response = await fetch('http://localhost:5001/api/auth/send-otp', {
+      // Yahan Render ka link add kiya hai
+      const response = await fetch('https://xoxo-backend-hoiu.onrender.com/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
       const data = await response.json();
       if (response.ok) {
-        setIsOtpSent(true); // OTP box show karo
+        setIsOtpSent(true); 
         setStatus({ type: 'success', msg: 'CODE SENT TO YOUR EMAIL' });
       } else {
         setStatus({ type: 'error', msg: data.message });
@@ -33,12 +33,12 @@ const SignUpCard = ({ onClose, onSwitch }) => {
     } finally { setLoading(false); }
   };
 
-  // STEP 2: OTP milne ke baad hi account create hoga
   const handleFinalSignUp = async (e) => {
     e.preventDefault(); 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5001/api/auth/signup', {
+      // Yahan Render ka link add kiya hai
+      const response = await fetch('https://xoxo-backend-hoiu.onrender.com/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, otp }),
@@ -80,7 +80,6 @@ const SignUpCard = ({ onClose, onSwitch }) => {
 
           <form className="space-y-5" onSubmit={isOtpSent ? handleFinalSignUp : handleSendOtp}>
             {!isOtpSent ? (
-              // Phase 1: Details Entry
               <>
                 <input required type="email" placeholder="EMAIL ADDRESS" value={email} onChange={(e) => setEmail(e.target.value)} 
                   className="w-full py-3 bg-transparent text-[10px] font-bold tracking-widest border-b border-black/10 focus:border-black outline-none" />
@@ -88,7 +87,6 @@ const SignUpCard = ({ onClose, onSwitch }) => {
                   className="w-full py-3 bg-transparent text-[10px] font-bold tracking-widest border-b border-black/10 focus:border-black outline-none" />
               </>
             ) : (
-              // Phase 2: OTP Verification Section
               <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                 <p className="text-[9px] font-bold opacity-50 mb-2 uppercase">Check your inbox for 6-digit code</p>
                 <input required type="text" maxLength="6" placeholder="VERIFICATION CODE" value={otp} onChange={(e) => setOtp(e.target.value)} 
