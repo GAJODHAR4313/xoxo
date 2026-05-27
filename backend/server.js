@@ -2,7 +2,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
-const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 const app = express();
@@ -15,18 +14,7 @@ mongoose.connect(MONGO_URI)
     .then(() => console.log("✅ DB Connected"))
     .catch(err => console.error("❌ DB Connection Error:", err));
 
-// Nodemailer Config
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_PASS // Yahan 16-digit App Password hona chahiye
-    }
-});
-
-let otpStore = {};
-
-// Schemas
+// --- SCHEMAS ---
 const User = mongoose.model('User', new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
@@ -49,61 +37,55 @@ const Order = mongoose.model('Order', new mongoose.Schema({
 
 // --- ROUTES ---
 
-// 1. OTP Send
-app.post('/api/auth/send-otp', async (req, res) => {
-    const { email } = req.body;
+// 1. Signup (No OTP)
+app.post('/api/auth/signup', async (req, res) => {
+    const { email, password } = req.body;
     try {
         const userExists = await User.findOne({ email });
         if (userExists) return res.status(400).json({ message: "EMAIL ALREADY REGISTERED" });
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        otpStore[email] = otp;
-        await transporter.sendMail({
-            from: `"XOXO ARCHIVE" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: 'XOXO ARCHIVE | IDENTITY VERIFICATION',
-            html: `<div style="background:#000; color:#fff; padding:50px; text-align:center;"><h1>XOXO.</h1><p>Your Code: ${otp}</p></div>`
-        });
-        res.json({ message: "OTP SENT" });
-    } catch (err) { 
-        console.error("OTP Error:", err);
-        res.status(500).json({ message: "MAIL ERROR", error: err.message }); 
-    }
-});
-
-// 2. Signup
-app.post('/api/auth/signup', async (req, res) => {
-    const { email, password, otp } = req.body;
-    if (!otpStore[email] || otpStore[email] !== otp) return res.status(400).json({ message: "INVALID OTP" });
-    try {
+        
         const hashedPassword = await bcrypt.hash(password, 10);
         await new User({ email, password: hashedPassword }).save();
-        delete otpStore[email];
         res.status(201).json({ message: "SUCCESS" });
     } catch (err) { res.status(500).json({ message: "ERROR" }); }
 });
 
-// 3. Login
+// 2. Login
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
     if (email === "admin@xoxo.com" && password === "admin123") return res.json({ user: { id: "admin", email, role: "admin" } });
+    
     const user = await User.findOne({ email });
     if (!user || !(await bcrypt.compare(password, user.password))) return res.status(400).json({ message: "FAIL" });
-    res.json({ user: { id: user._id, email: user.email, role: user.role } });
+    res.json({ user: { id: user._id, email: user.email, role: user.role, cart: user.cart, wishlist: user.wishlist } });
 });
 
-// 4. Products
+// 3. Products
 app.get('/api/products', async (req, res) => {
     const products = await Product.find().sort({ createdAt: -1 });
     res.json(products);
 });
 
-// 5. Orders
+app.post('/api/products/add', async (req, res) => {
+    try {
+        const newProduct = new Product(req.body);
+        await newProduct.save();
+        res.status(201).json(newProduct);
+    } catch (err) { res.status(500).json(err); }
+});
+
+// 4. Orders
 app.post('/api/orders/place', async (req, res) => {
     try {
         const newOrder = new Order(req.body);
         await newOrder.save();
         res.status(201).json(newOrder);
     } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/admin/orders', async (req, res) => {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.json(orders);
 });
 
 // Server Start
