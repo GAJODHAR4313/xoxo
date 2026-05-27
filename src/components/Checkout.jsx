@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useCart } from '../Context/CartContext';
+import { useCart } from '../Context/cartContext';
 import { motion } from 'framer-motion';
 
 const Checkout = () => {

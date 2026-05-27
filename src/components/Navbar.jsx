@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { Search, User, Heart, ShoppingBag, Menu, Zap, LogOut, Package, ShieldCheck, UserMinus } from 'lucide-react'; // Added UserMinus icon
-import { useCart } from '../Context/CartContext';
+import { useCart } from '../Context/cartContext';
 import axios from 'axios'; // Axios import kiya account delete ke liye
 
 const Navbar = ({ onOpenSignUp, onOpenAdminLogin, onOpenCart, onOpenWishlist }) => { 

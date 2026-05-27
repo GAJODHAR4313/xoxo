@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, ShoppingBag, Trash2 } from 'lucide-react';
-import { useCart } from '../Context/CartContext';
+import { useCart } from '../Context/cartContext';
 
 const WishlistDrawer = ({ isOpen, onClose }) => {
   const { wishlistItems, toggleWishlist, addToCart } = useCart();

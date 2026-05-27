@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Eye, X, Clock, Heart } from 'lucide-react';
-import { useCart } from '../Context/CartContext';
+import { useCart } from '../Context/cartContext';
 
 const Watches = () => {
   const [products, setProducts] = useState([]);
