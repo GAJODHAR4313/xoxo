@@ -13,7 +13,7 @@ const Orders = () => {
 
       if (userId) {
         try {
-          const response = await fetch(`http://localhost:5001/api/orders/user/${userId}`);
+          const response = await fetch(`https://xoxo-backend-hoiu.onrender.com/api/orders/user/${userId}`);
           
           if (!response.ok) {
             throw new Error(`Server error: ${response.status}`);

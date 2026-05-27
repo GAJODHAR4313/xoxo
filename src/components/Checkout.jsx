@@ -43,7 +43,7 @@ const Checkout = () => {
 
     try {
       // Dhyan de: URL bilkul yehi hona chahiye
-      const response = await fetch('http://localhost:5001/api/orders/place', {
+      const response = await fetch('https://xoxo-backend-hoiu.onrender.com/api/orders/place', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

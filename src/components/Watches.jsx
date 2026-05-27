@@ -13,7 +13,7 @@ const Watches = () => {
   useEffect(() => {
     const fetchWatches = async () => {
       try {
-        const res = await axios.get('http://localhost:5001/api/products');
+        const res = await axios.get('https://xoxo-backend-hoiu.onrender.com/api/products');
         const watchBrands = ["Rolex", "Omega", "Cartier", "Seiko", "Casio"];
         setProducts(res.data.filter(p => watchBrands.includes(p.category)));
       } catch (err) { console.error("Watches error", err); }

@@ -10,7 +10,7 @@ const GlobalArchive = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     if (isOpen) {
-      axios.get('http://localhost:5001/api/products')
+      axios.get('https://xoxo-backend-hoiu.onrender.com/api/products')
         .then(res => setProducts(res.data))
         .catch(err => console.error("Archive load error", err));
     }

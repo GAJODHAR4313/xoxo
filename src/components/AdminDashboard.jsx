@@ -15,14 +15,14 @@ const AdminDashboard = () => {
 
   const fetchOrders = async () => { 
     try {
-      const res = await axios.get('http://localhost:5001/api/admin/orders'); 
+      const res = await axios.get('https://xoxo-backend-hoiu.onrender.com/api/admin/orders'); 
       setOrders(res.data); 
     } catch (err) { console.error("Orders load failed"); }
   };
 
   const fetchProducts = async () => { 
     try {
-      const res = await axios.get('http://localhost:5001/api/products'); 
+      const res = await axios.get('https://xoxo-backend-hoiu.onrender.com/api/products'); 
       setProducts(res.data); 
     } catch (err) { console.error("Products load failed"); }
   };
@@ -30,7 +30,7 @@ const AdminDashboard = () => {
   const handleAdd = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5001/api/products/add', form);
+      await axios.post('https://xoxo-backend-hoiu.onrender.com/api/products/add', form);
       alert(`Product Added! ✅`);
       setForm({ name: '', price: '', category: 'Tees', image: '', detail: '', color: 'bg-zinc-100', stock: 0 });
       fetchProducts();
@@ -40,7 +40,7 @@ const AdminDashboard = () => {
   const handleDelete = async (id) => { 
     if(window.confirm("Delete?")) { 
       try {
-        await axios.delete(`http://localhost:5001/api/products/${id}`); 
+        await axios.delete(`https://xoxo-backend-hoiu.onrender.com/api/products/${id}`); 
         fetchProducts(); 
       } catch (err) { alert("Delete failed"); }
     } 
@@ -65,7 +65,7 @@ const AdminDashboard = () => {
                 </div>
                 <select 
                   value={o.status}
-                  onChange={(e) => axios.put(`http://localhost:5001/api/admin/orders/${o._id}`, {status: e.target.value}).then(fetchOrders)} 
+                  onChange={(e) => axios.put(`https://xoxo-backend-hoiu.onrender.com/api/admin/orders/${o._id}`, {status: e.target.value}).then(fetchOrders)} 
                   className="bg-black text-white text-[9px] font-black uppercase px-4 py-2 rounded-lg outline-none cursor-pointer"
                 >
                   <option value="Processing">Processing</option>

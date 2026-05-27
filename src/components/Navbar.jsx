@@ -31,7 +31,7 @@ const Navbar = ({ onOpenSignUp, onOpenAdminLogin, onOpenCart, onOpenWishlist }) 
   const handleDeleteAccount = async () => {
     if(window.confirm("PERMANENTLY DELETE YOUR ACCOUNT? THIS CANNOT BE UNDONE.")) {
       try {
-        await axios.delete(`http://localhost:5001/api/user/delete/${user.id || user._id}`);
+        await axios.delete(`https://xoxo-backend-hoiu.onrender.com/api/user/delete/${user.id || user._id}`);
         alert("Account Terminated.");
         localStorage.removeItem('user');
         window.location.reload();

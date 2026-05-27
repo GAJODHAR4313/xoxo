@@ -12,7 +12,7 @@ const Shop = () => {
   const shopCategories = ["Tees", "Bottoms", "Outerwear", "Accessories"];
 
   useEffect(() => {
-    axios.get('http://localhost:5001/api/products').then(res => {
+    axios.get('https://xoxo-backend-hoiu.onrender.com/api/products').then(res => {
       const onlyShopItems = res.data.filter(p => shopCategories.includes(p.category));
       setProducts(onlyShopItems);
     });

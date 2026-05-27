@@ -13,7 +13,7 @@ const Shoes = () => {
   useEffect(() => {
     const fetchShoes = async () => {
       try {
-        const res = await axios.get('http://localhost:5001/api/products');
+        const res = await axios.get('https://xoxo-backend-hoiu.onrender.com/api/products');
         // Filter: Sirf wahi dikhao jo shoe brands hain
         const shoeBrands = ["Nike", "Adidas", "New Balance", "Asics"];
         setProducts(res.data.filter(p => shoeBrands.includes(p.category)));
