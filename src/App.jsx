@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'; 
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'; 
 import { AnimatePresence } from 'framer-motion';
-// Yahan Context ko context (small c) kar diya hai
-import { CartProvider } from './context/CartContext'; 
+// Folder ka naam 'store' kar diya hai taaki case-sensitivity ka error na aaye
+import { CartProvider } from './store/CartContext'; 
 
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
