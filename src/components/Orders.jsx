@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import API_BASE_URL from '../config';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -13,7 +14,7 @@ const Orders = () => {
 
       if (userId) {
         try {
-          const response = await fetch(`https://xoxo-backend-hoiu.onrender.com/api/orders/user/${userId}`);
+          const response = await fetch(`${API_BASE_URL}/api/orders/user/${userId}`);
           
           if (!response.ok) {
             throw new Error(`Server error: ${response.status}`);
@@ -35,11 +36,11 @@ const Orders = () => {
     <motion.div 
       initial={{ opacity: 0 }} 
       animate={{ opacity: 1 }} 
-      className="pt-40 pb-20 px-6 max-w-5xl mx-auto min-h-screen"
+      className="pt-28 md:pt-40 pb-20 px-4 sm:px-6 max-w-5xl mx-auto min-h-screen"
     >
-      <div className="mb-20">
-        <h1 className="text-7xl font-black italic uppercase tracking-tighter">Your Orders</h1>
-        <p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.5em]">Archive Acquisition History</p>
+      <div className="mb-10 sm:mb-20">
+        <h1 className="text-4xl sm:text-7xl font-black italic uppercase tracking-tighter">Your Orders</h1>
+        <p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.35em] sm:tracking-[0.5em]">Archive Acquisition History</p>
       </div>
 
       {loading ? (
@@ -51,7 +52,7 @@ const Orders = () => {
       ) : (
         <div className="space-y-6">
           {orders.map((order) => (
-            <div key={order._id} className="group p-10 bg-neutral-50 rounded-[40px] border border-transparent hover:border-black/5 transition-all">
+            <div key={order._id} className="group p-6 sm:p-10 bg-neutral-50 rounded-[24px] sm:rounded-[40px] border border-transparent hover:border-black/5 transition-all">
               <div className="flex flex-col md:flex-row justify-between gap-10">
                 <div className="space-y-4">
                   <div className="flex items-center gap-4">

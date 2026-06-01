@@ -3,6 +3,7 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag, ArrowRight, Heart } from 'lucide-react';
 import { useCart } from '../Context/cartContext';
+import API_BASE_URL from '../config';
 
 const GlobalArchive = ({ isOpen, onClose }) => {
   const [products, setProducts] = useState([]);
@@ -10,7 +11,7 @@ const GlobalArchive = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     if (isOpen) {
-      axios.get('https://xoxo-backend-hoiu.onrender.com/api/products')
+      axios.get(`${API_BASE_URL}/api/products`)
         .then(res => setProducts(res.data))
         .catch(err => console.error("Archive load error", err));
     }

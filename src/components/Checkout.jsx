@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useCart } from '../Context/cartContext';
 import { motion } from 'framer-motion';
+import API_BASE_URL from '../config';
 
 const Checkout = () => {
   const { cartItems, setCartItems } = useCart();
@@ -43,7 +44,7 @@ const Checkout = () => {
 
     try {
       // Dhyan de: URL bilkul yehi hona chahiye
-      const response = await fetch('https://xoxo-backend-hoiu.onrender.com/api/orders/place', {
+      const response = await fetch(`${API_BASE_URL}/api/orders/place`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -71,22 +72,22 @@ const Checkout = () => {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="pt-40 pb-20 px-6 max-w-7xl mx-auto min-h-screen">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="pt-28 md:pt-40 pb-20 px-4 sm:px-6 max-w-7xl mx-auto min-h-screen">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
         {/* Shipping Form */}
         <div className="space-y-12">
-          <h1 className="text-6xl font-black italic uppercase tracking-tighter mb-2">Checkout</h1>
+          <h1 className="text-4xl sm:text-6xl font-black italic uppercase tracking-tighter mb-2">Checkout</h1>
           <div className="space-y-8">
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
               <input name="firstName" onChange={handleInputChange} placeholder="FIRST NAME" className="border-b border-black/10 py-2 outline-none text-[11px] font-bold" />
               <input name="lastName" onChange={handleInputChange} placeholder="LAST NAME" className="border-b border-black/10 py-2 outline-none text-[11px] font-bold" />
             </div>
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
               <input name="email" value={formData.email} onChange={handleInputChange} placeholder="EMAIL" className="border-b border-black/10 py-2 outline-none text-[11px] font-bold" />
               <input name="phone" onChange={handleInputChange} placeholder="PHONE" className="border-b border-black/10 py-2 outline-none text-[11px] font-bold" />
             </div>
             <input name="address" onChange={handleInputChange} placeholder="ADDRESS" className="w-full border-b border-black/10 py-2 outline-none text-[11px] font-bold" />
-            <div className="grid grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
               <input name="city" onChange={handleInputChange} placeholder="CITY" className="border-b border-black/10 py-2 outline-none text-[11px] font-bold" />
               <input name="zip" onChange={handleInputChange} placeholder="ZIP" className="border-b border-black/10 py-2 outline-none text-[11px] font-bold" />
               <input name="country" onChange={handleInputChange} placeholder="COUNTRY" className="border-b border-black/10 py-2 outline-none text-[11px] font-bold" />
@@ -95,8 +96,8 @@ const Checkout = () => {
         </div>
 
         {/* Summary Card */}
-        <div className="relative">
-          <div className="sticky top-40 bg-black text-white p-12 rounded-[40px] shadow-2xl">
+        <div className="relative animate-fade-in">
+          <div className="sticky top-28 md:top-40 bg-black text-white p-6 sm:p-12 rounded-[24px] sm:rounded-[40px] shadow-2xl">
             <h2 className="text-[12px] font-black uppercase tracking-[0.4em] mb-10 border-b border-white/10 pb-4">Summary</h2>
             <div className="space-y-6 mb-10">
               {cartItems.map(item => (

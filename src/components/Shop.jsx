@@ -3,6 +3,7 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Eye, X, Heart } from 'lucide-react';
 import { useCart } from '../Context/cartContext';
+import API_BASE_URL from '../config';
 
 const Shop = () => {
   const [products, setProducts] = useState([]);
@@ -12,7 +13,7 @@ const Shop = () => {
   const shopCategories = ["Tees", "Bottoms", "Outerwear", "Accessories"];
 
   useEffect(() => {
-    axios.get('https://xoxo-backend-hoiu.onrender.com/api/products').then(res => {
+    axios.get(`${API_BASE_URL}/api/products`).then(res => {
       const onlyShopItems = res.data.filter(p => shopCategories.includes(p.category));
       setProducts(onlyShopItems);
     });
@@ -55,22 +56,22 @@ const Shop = () => {
 
       <AnimatePresence>
         {selectedProduct && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md" onClick={() => setSelectedProduct(null)}>
-            <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 30 }} className="bg-white w-full max-w-5xl rounded-[40px] overflow-hidden flex flex-col md:flex-row relative shadow-2xl" onClick={e => e.stopPropagation()}>
-              <button onClick={() => setSelectedProduct(null)} className="absolute top-8 right-8 z-20 p-3 bg-black text-white rounded-full hover:rotate-90 transition-all"><X size={24}/></button>
-              <div className={`flex-1 ${selectedProduct.color} flex items-center justify-center p-16`}>
-                <img src={selectedProduct.image} alt="" className="w-full h-full object-contain mix-blend-multiply" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md" onClick={() => setSelectedProduct(null)}>
+            <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 30 }} className="bg-white w-full max-w-5xl rounded-[24px] md:rounded-[40px] overflow-hidden flex flex-col md:flex-row relative shadow-2xl max-h-[90vh] md:max-h-[none] overflow-y-auto md:overflow-y-visible" onClick={e => e.stopPropagation()}>
+              <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 md:top-8 md:right-8 z-20 p-2.5 md:p-3 bg-black text-white rounded-full hover:rotate-90 transition-all"><X size={20}/></button>
+              <div className={`flex-1 ${selectedProduct.color} flex items-center justify-center p-8 md:p-16 min-h-[250px] md:min-h-0`}>
+                <img src={selectedProduct.image} alt="" className="w-full h-full max-h-[30vh] md:max-h-none object-contain mix-blend-multiply" />
               </div>
-              <div className="flex-1 p-16 flex flex-col justify-center bg-white">
+              <div className="flex-1 p-6 sm:p-12 md:p-16 flex flex-col justify-center bg-white">
                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300 mb-4">{selectedProduct.category} // Stock: {selectedProduct.stock}</p>
-                <h2 className="text-6xl font-black uppercase italic tracking-tighter leading-none mb-6">{selectedProduct.name}</h2>
-                <p className="text-sm text-zinc-400 font-medium leading-relaxed mb-10 max-w-sm">{selectedProduct.detail}</p>
-                <div className="flex items-center justify-between border-t border-zinc-100 pt-10">
-                  <span className="text-4xl font-black italic tracking-tighter">${selectedProduct.price}</span>
+                <h2 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase italic tracking-tighter leading-none mb-6">{selectedProduct.name}</h2>
+                <p className="text-sm text-zinc-400 font-medium leading-relaxed mb-8 max-w-sm">{selectedProduct.detail}</p>
+                <div className="flex items-center justify-between border-t border-zinc-100 pt-8 mt-2">
+                  <span className="text-3xl sm:text-4xl font-black italic tracking-tighter">${selectedProduct.price}</span>
                   <button 
                     disabled={selectedProduct.stock <= 0}
                     onClick={() => { addToCart(selectedProduct); setSelectedProduct(null); }}
-                    className={`px-10 py-5 rounded-2xl font-black uppercase italic text-xs tracking-[0.2em] transition-all shadow-lg ${selectedProduct.stock <= 0 ? 'bg-zinc-100 text-zinc-300' : 'bg-black text-white hover:shadow-2xl hover:-translate-y-1'}`}
+                    className={`px-6 py-4 md:px-10 md:py-5 rounded-2xl font-black uppercase italic text-[10px] sm:text-xs tracking-[0.2em] transition-all shadow-lg ${selectedProduct.stock <= 0 ? 'bg-zinc-100 text-zinc-300' : 'bg-black text-white hover:shadow-2xl hover:-translate-y-1'}`}
                   >
                     {selectedProduct.stock <= 0 ? 'Out of Stock' : 'Secure Item'}
                   </button>

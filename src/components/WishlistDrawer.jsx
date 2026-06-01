@@ -19,7 +19,7 @@ const WishlistDrawer = ({ isOpen, onClose }) => {
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="fixed right-0 top-0 h-full w-full max-w-md bg-white z-[300] shadow-2xl flex flex-col"
           >
-            <div className="p-8 border-b border-neutral-100 flex justify-between items-center">
+            <div className="p-6 sm:p-8 border-b border-neutral-100 flex justify-between items-center">
               <div>
                 <h2 className="text-2xl font-black italic uppercase tracking-tighter">Your Likes</h2>
                 <p className="text-[9px] font-bold opacity-30 uppercase tracking-[0.3em]">{wishlistItems.length} Saved Items</p>
@@ -27,7 +27,7 @@ const WishlistDrawer = ({ isOpen, onClose }) => {
               <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-full transition-colors"><X size={20} /></button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 no-scrollbar">
+            <div className="flex-1 overflow-y-auto p-6 sm:p-8 no-scrollbar">
               {wishlistItems.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center opacity-20">
                   <Heart size={40} strokeWidth={1} />

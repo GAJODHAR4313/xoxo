@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { X, ArrowRight, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import API_BASE_URL from '../config';
 
 const SignInCard = ({ onClose, onLoginSuccess, onSwitch, isAdminMode }) => {
   // --- LOGIC (AUTO-FILL REMOVED) ---
@@ -21,7 +22,7 @@ const SignInCard = ({ onClose, onLoginSuccess, onSwitch, isAdminMode }) => {
     setLoading(true);
     try {
       // Yahan Render ka link add kiya hai
-      const res = await axios.post('https://xoxo-backend-hoiu.onrender.com/api/auth/login', formData);
+      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, formData);
       onLoginSuccess(res.data.user);
       onClose();
     } catch (err) { alert(isAdminMode ? "Admin Access Denied" : "Invalid Credentials"); }
@@ -33,7 +34,7 @@ const SignInCard = ({ onClose, onLoginSuccess, onSwitch, isAdminMode }) => {
     setLoading(true);
     try {
       // Yahan Render ka link add kiya hai
-      await axios.post('https://xoxo-backend-hoiu.onrender.com/api/auth/forgot-password-otp', { email: resetData.email });
+      await axios.post(`${API_BASE_URL}/api/auth/forgot-password-otp`, { email: resetData.email });
       setStep(2);
     } catch (err) { alert("USER NOT FOUND"); }
     setLoading(false);
@@ -43,7 +44,7 @@ const SignInCard = ({ onClose, onLoginSuccess, onSwitch, isAdminMode }) => {
     setLoading(true);
     try {
       // Yahan Render ka link add kiya hai
-      await axios.post('https://xoxo-backend-hoiu.onrender.com/api/auth/reset-password', resetData);
+      await axios.post(`${API_BASE_URL}/api/auth/reset-password`, resetData);
       alert("PASSWORD UPDATED. PLEASE LOGIN.");
       setIsForgotMode(false);
       setStep(1);

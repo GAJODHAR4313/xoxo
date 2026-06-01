@@ -27,9 +27,9 @@ const CartDrawer = ({ isOpen, onClose }) => {
           <motion.div 
             initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} 
             transition={{ type: 'spring', damping: 25, stiffness: 200 }} 
-            className="fixed right-0 top-0 h-full w-full md:w-[450px] bg-white z-[300] p-10 shadow-2xl flex flex-col"
+            className="fixed right-0 top-0 h-full w-full md:w-[450px] bg-white z-[300] p-6 sm:p-10 shadow-2xl flex flex-col"
           >
-            <div className="flex justify-between items-center mb-12">
+            <div className="flex justify-between items-center mb-8 sm:mb-12">
               <h2 className="text-3xl font-black italic uppercase tracking-tighter">Your Archive</h2>
               <button onClick={onClose} className="hover:rotate-90 transition-transform duration-300">
                 <X size={24} />

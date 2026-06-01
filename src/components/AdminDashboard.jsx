@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ShoppingBag, Package, Plus, Trash2, CreditCard } from 'lucide-react';
+import API_BASE_URL from '../config';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('orders');
@@ -15,14 +16,14 @@ const AdminDashboard = () => {
 
   const fetchOrders = async () => { 
     try {
-      const res = await axios.get('https://xoxo-backend-hoiu.onrender.com/api/admin/orders'); 
+      const res = await axios.get(`${API_BASE_URL}/api/admin/orders`); 
       setOrders(res.data); 
     } catch (err) { console.error("Orders load failed"); }
   };
 
   const fetchProducts = async () => { 
     try {
-      const res = await axios.get('https://xoxo-backend-hoiu.onrender.com/api/products'); 
+      const res = await axios.get(`${API_BASE_URL}/api/products`); 
       setProducts(res.data); 
     } catch (err) { console.error("Products load failed"); }
   };
@@ -30,7 +31,7 @@ const AdminDashboard = () => {
   const handleAdd = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('https://xoxo-backend-hoiu.onrender.com/api/products/add', form);
+      await axios.post(`${API_BASE_URL}/api/products/add`, form);
       alert(`Product Added! ✅`);
       setForm({ name: '', price: '', category: 'Tees', image: '', detail: '', color: 'bg-zinc-100', stock: 0 });
       fetchProducts();
@@ -40,33 +41,35 @@ const AdminDashboard = () => {
   const handleDelete = async (id) => { 
     if(window.confirm("Delete?")) { 
       try {
-        await axios.delete(`https://xoxo-backend-hoiu.onrender.com/api/products/${id}`); 
+        await axios.delete(`${API_BASE_URL}/api/products/${id}`); 
         fetchProducts(); 
       } catch (err) { alert("Delete failed"); }
     } 
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50 font-primary">
-      <div className="w-64 bg-black text-white p-6 flex flex-col gap-4">
-        <h2 className="font-black text-xl italic mb-10 text-center tracking-tighter">XOXO ADMIN</h2>
-        <button onClick={() => setActiveTab('orders')} className={`p-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'orders' ? 'bg-white text-black' : 'hover:bg-white/10'}`}>Orders</button>
-        <button onClick={() => setActiveTab('products')} className={`p-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'products' ? 'bg-white text-black' : 'hover:bg-white/10'}`}>Inventory</button>
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 font-primary pt-20 md:pt-0">
+      <div className="w-full md:w-64 bg-black text-white p-6 flex flex-row md:flex-col gap-4 items-center md:items-stretch overflow-x-auto md:overflow-x-visible sticky top-20 md:top-0 z-30">
+        <h2 className="font-black text-xl italic md:mb-10 text-center tracking-tighter mr-6 md:mr-0 flex-shrink-0">XOXO ADMIN</h2>
+        <div className="flex flex-row md:flex-col gap-3 w-full">
+          <button onClick={() => setActiveTab('orders')} className={`p-3 md:p-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex-1 md:flex-none text-center whitespace-nowrap ${activeTab === 'orders' ? 'bg-white text-black' : 'hover:bg-white/10 text-white/70'}`}>Orders</button>
+          <button onClick={() => setActiveTab('products')} className={`p-3 md:p-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex-1 md:flex-none text-center whitespace-nowrap ${activeTab === 'products' ? 'bg-white text-black' : 'hover:bg-white/10 text-white/70'}`}>Inventory</button>
+        </div>
       </div>
 
-      <div className="flex-1 p-10">
+      <div className="flex-1 p-4 sm:p-10">
         {activeTab === 'orders' ? (
           <div className="space-y-4">
             {orders.map(o => (
-              <div key={o._id} className="bg-white p-6 rounded-2xl shadow-sm border border-black/5 flex justify-between items-center hover:shadow-md transition-shadow">
+              <div key={o._id} className="bg-white p-6 rounded-2xl shadow-sm border border-black/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition-shadow">
                 <div>
                     <p className="font-black uppercase text-[10px] italic">Order: {o.shippingDetails?.name || 'Customer'}</p>
                     <p className="text-[9px] text-gray-400 font-bold uppercase mt-1 tracking-[0.2em]">${o.totalAmount} — {o.status}</p>
                 </div>
                 <select 
                   value={o.status}
-                  onChange={(e) => axios.put(`https://xoxo-backend-hoiu.onrender.com/api/admin/orders/${o._id}`, {status: e.target.value}).then(fetchOrders)} 
-                  className="bg-black text-white text-[9px] font-black uppercase px-4 py-2 rounded-lg outline-none cursor-pointer"
+                  onChange={(e) => axios.put(`${API_BASE_URL}/api/admin/orders/${o._id}`, {status: e.target.value}).then(fetchOrders)} 
+                  className="bg-black text-white text-[9px] font-black uppercase px-4 py-2 rounded-lg outline-none cursor-pointer w-full sm:w-auto text-center"
                 >
                   <option value="Processing">Processing</option>
                   <option value="Shipped">Shipped</option>
@@ -77,7 +80,7 @@ const AdminDashboard = () => {
           </div>
         ) : (
           <div className="space-y-10">
-            <form onSubmit={handleAdd} className="bg-white p-8 rounded-3xl shadow-sm border border-black/5 grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <form onSubmit={handleAdd} className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-black/5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <input placeholder="Name" className="p-4 bg-zinc-50 rounded-xl text-xs font-bold outline-none border border-transparent focus:border-black/10" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
               <input placeholder="Price" className="p-4 bg-zinc-50 rounded-xl text-xs font-bold outline-none border border-transparent focus:border-black/10" value={form.price} onChange={e => setForm({...form, price: e.target.value})} required />
               <input type="number" placeholder="Stock" className="p-4 bg-zinc-50 rounded-xl text-xs font-bold outline-none border border-transparent focus:border-black/10" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} required />
@@ -92,7 +95,7 @@ const AdminDashboard = () => {
               <button type="submit" className="col-span-full bg-black text-white p-5 rounded-2xl font-black uppercase italic text-xs tracking-[0.3em] hover:bg-zinc-800 transition-all active:scale-95">Add Product</button>
             </form>
 
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-black/5 overflow-x-auto">
+            <div className="bg-white p-4 sm:p-8 rounded-3xl shadow-sm border border-black/5 overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                     <tr className="text-[10px] font-black uppercase text-gray-400 border-b border-black/5">

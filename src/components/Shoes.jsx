@@ -3,6 +3,7 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Eye, X, Heart } from 'lucide-react';
 import { useCart } from '../Context/cartContext';
+import API_BASE_URL from '../config';
 
 const Shoes = () => {
   const [products, setProducts] = useState([]);
@@ -13,7 +14,7 @@ const Shoes = () => {
   useEffect(() => {
     const fetchShoes = async () => {
       try {
-        const res = await axios.get('https://xoxo-backend-hoiu.onrender.com/api/products');
+        const res = await axios.get(`${API_BASE_URL}/api/products`);
         // Filter: Sirf wahi dikhao jo shoe brands hain
         const shoeBrands = ["Nike", "Adidas", "New Balance", "Asics"];
         setProducts(res.data.filter(p => shoeBrands.includes(p.category)));
@@ -75,19 +76,19 @@ const Shoes = () => {
 
       <AnimatePresence>
         {selectedShoe && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="relative w-full max-w-4xl bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row">
-              <button onClick={() => setSelectedShoe(null)} className="absolute top-6 right-6 z-10 p-2 bg-white/80 rounded-full hover:scale-110 transition-transform shadow-sm"><X size={20} /></button>
-              <div className={`w-full md:w-1/2 min-h-[300px] ${selectedShoe.color || 'bg-zinc-100'} flex items-center justify-center`}>
-                <img src={selectedShoe.image} alt="" className="w-full h-full object-cover" />
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} className="relative w-full max-w-4xl bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] md:max-h-[none] overflow-y-auto md:overflow-y-visible">
+              <button onClick={() => setSelectedShoe(null)} className="absolute top-4 right-4 md:top-6 md:right-6 z-10 p-2 bg-white/80 rounded-full hover:scale-110 transition-transform shadow-sm"><X size={20} /></button>
+              <div className={`w-full md:w-1/2 min-h-[250px] md:min-h-[300px] ${selectedShoe.color || 'bg-zinc-100'} flex items-center justify-center`}>
+                <img src={selectedShoe.image} alt="" className="w-full h-full max-h-[30vh] md:max-h-none object-cover" />
               </div>
-              <div className="w-full md:w-1/2 p-10 md:p-14 flex flex-col justify-center">
+              <div className="w-full md:w-1/2 p-6 sm:p-10 md:p-14 flex flex-col justify-center">
                 <span className="text-[10px] font-black tracking-[0.4em] text-neutral-300 uppercase">{selectedShoe.category} Footwear</span>
-                <h2 className="text-4xl font-black italic uppercase tracking-tighter leading-none mb-6 mt-2">{selectedShoe.name}</h2>
+                <h2 className="text-3xl sm:text-4xl font-black italic uppercase tracking-tighter leading-none mb-6 mt-2">{selectedShoe.name}</h2>
                 <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest leading-relaxed mb-8">{selectedShoe.detail}</p>
                 <div className="flex items-center justify-between pt-8 border-t border-neutral-50">
                    <span className="text-3xl font-black italic">${selectedShoe.price}</span>
-                   <button onClick={() => { addToCart(selectedShoe); setSelectedShoe(null); }} className="bg-black text-white px-8 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-80 transition-opacity flex items-center gap-3"><ShoppingCart size={16} /> Add to Cart</button>
+                   <button onClick={() => { addToCart(selectedShoe); setSelectedShoe(null); }} className="bg-black text-white px-6 py-4 md:px-8 md:py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:opacity-80 transition-opacity flex items-center gap-3"><ShoppingCart size={16} /> Add to Cart</button>
                 </div>
               </div>
             </motion.div>

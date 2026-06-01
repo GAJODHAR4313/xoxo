@@ -3,6 +3,7 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Eye, X, Clock, Heart } from 'lucide-react';
 import { useCart } from '../Context/cartContext';
+import API_BASE_URL from '../config';
 
 const Watches = () => {
   const [products, setProducts] = useState([]);
@@ -13,7 +14,7 @@ const Watches = () => {
   useEffect(() => {
     const fetchWatches = async () => {
       try {
-        const res = await axios.get('https://xoxo-backend-hoiu.onrender.com/api/products');
+        const res = await axios.get(`${API_BASE_URL}/api/products`);
         const watchBrands = ["Rolex", "Omega", "Cartier", "Seiko", "Casio"];
         setProducts(res.data.filter(p => watchBrands.includes(p.category)));
       } catch (err) { console.error("Watches error", err); }
@@ -75,20 +76,20 @@ const Watches = () => {
       <AnimatePresence>
         {selectedWatch && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className="relative w-full max-w-5xl bg-white rounded-[2rem] overflow-hidden shadow-2xl flex flex-col md:flex-row min-h-[400px]">
-              <button onClick={() => setSelectedWatch(null)} className="absolute top-8 right-8 z-10 p-3 bg-neutral-100 text-black rounded-full hover:bg-black hover:text-white transition-all"><X size={20} /></button>
-              <div className={`w-full md:w-[45%] min-h-[300px] ${selectedWatch.color || 'bg-stone-50'} flex items-center justify-center`}>
-                <img src={selectedWatch.image} alt="" className="w-full h-full object-cover" />
+            <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className="relative w-full max-w-5xl bg-white rounded-[2rem] overflow-hidden shadow-2xl flex flex-col md:flex-row min-h-[400px] max-h-[90vh] md:max-h-[none] overflow-y-auto md:overflow-y-visible">
+              <button onClick={() => setSelectedWatch(null)} className="absolute top-4 right-4 md:top-8 md:right-8 z-10 p-2.5 md:p-3 bg-neutral-100 text-black rounded-full hover:bg-black hover:text-white transition-all"><X size={20} /></button>
+              <div className={`w-full md:w-[45%] min-h-[250px] md:min-h-[300px] ${selectedWatch.color || 'bg-stone-50'} flex items-center justify-center`}>
+                <img src={selectedWatch.image} alt="" className="w-full h-full max-h-[30vh] md:max-h-none object-cover" />
               </div>
-              <div className="w-full md:w-[55%] p-10 md:p-16 flex flex-col justify-center">
+              <div className="w-full md:w-[55%] p-6 sm:p-10 md:p-16 flex flex-col justify-center">
                 <span className="text-[10px] font-black tracking-[0.5em] text-neutral-300 uppercase">Certified Chronometer</span>
-                <h2 className="text-5xl font-black italic uppercase tracking-tighter leading-none mb-6 mt-2">{selectedWatch.name}</h2>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black italic uppercase tracking-tighter leading-none mb-6 mt-2">{selectedWatch.name}</h2>
                 <p className="text-xs font-bold text-neutral-400 uppercase tracking-[0.1em] leading-relaxed mb-10">{selectedWatch.detail}</p>
                 <div className="grid grid-cols-2 gap-8 mb-10 py-6 border-y border-neutral-100">
-                   <div><span className="text-[9px] font-black text-neutral-300 uppercase block mb-1">Price (USD)</span><span className="text-3xl font-black italic tracking-tighter">${selectedWatch.price}</span></div>
+                   <div><span className="text-[9px] font-black text-neutral-300 uppercase block mb-1">Price (USD)</span><span className="text-2xl sm:text-3xl font-black italic tracking-tighter">${selectedWatch.price}</span></div>
                    <div><span className="text-[9px] font-black text-neutral-300 uppercase block mb-1">Availability</span><span className="text-xs font-black uppercase text-green-600 italic">Ships in 24h</span></div>
                 </div>
-                <button onClick={() => { addToCart(selectedWatch); setSelectedWatch(null); }} className="w-full bg-black text-white py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:opacity-90 transition-opacity flex items-center justify-center gap-3"><ShoppingCart size={18} /> Add to Cart</button>
+                <button onClick={() => { addToCart(selectedWatch); setSelectedWatch(null); }} className="w-full bg-black text-white py-4 md:py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:opacity-90 transition-opacity flex items-center justify-center gap-3"><ShoppingCart size={18} /> Add to Cart</button>
               </div>
             </motion.div>
           </div>
