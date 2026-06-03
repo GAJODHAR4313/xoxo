@@ -37,13 +37,12 @@ const Order = mongoose.model('Order', new mongoose.Schema({
 
 // --- ROUTES ---
 
-// 1. Signup (No OTP)
+// 1. Signup
 app.post('/api/auth/signup', async (req, res) => {
     const { email, password } = req.body;
     try {
         const userExists = await User.findOne({ email });
         if (userExists) return res.status(400).json({ message: "EMAIL ALREADY REGISTERED" });
-        
         const hashedPassword = await bcrypt.hash(password, 10);
         await new User({ email, password: hashedPassword }).save();
         res.status(201).json({ message: "SUCCESS" });
@@ -54,18 +53,53 @@ app.post('/api/auth/signup', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
     if (email === "admin@xoxo.com" && password === "admin123") return res.json({ user: { id: "admin", email, role: "admin" } });
-    
     const user = await User.findOne({ email });
     if (!user || !(await bcrypt.compare(password, user.password))) return res.status(400).json({ message: "FAIL" });
     res.json({ user: { id: user._id, email: user.email, role: user.role, cart: user.cart, wishlist: user.wishlist } });
 });
 
-// 3. Products
+// 3. User Data
+app.get('/api/user/data/:userId', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        res.json({ cart: user.cart || [], wishlist: user.wishlist || [] });
+    } catch (err) { res.status(500).json({ message: "Error" }); }
+});
+
+// 4. Delete User
+app.delete('/api/user/delete/:userId', async (req, res) => {
+    try {
+        await User.findByIdAndDelete(req.params.userId);
+        res.json({ message: "Account deleted" });
+    } catch (err) { res.status(500).json({ message: "Error" }); }
+});
+
+// 5. Cart Sync
+app.post('/api/cart/sync', async (req, res) => {
+    try {
+        const { userId, cartItems } = req.body;
+        await User.findByIdAndUpdate(userId, { cart: cartItems });
+        res.json({ message: "Cart synced" });
+    } catch (err) { res.status(500).json({ message: "Error" }); }
+});
+
+// 6. Wishlist Sync
+app.post('/api/wishlist/sync', async (req, res) => {
+    try {
+        const { userId, wishlistItems } = req.body;
+        await User.findByIdAndUpdate(userId, { wishlist: wishlistItems });
+        res.json({ message: "Wishlist synced" });
+    } catch (err) { res.status(500).json({ message: "Error" }); }
+});
+
+// 7. Products — Get All
 app.get('/api/products', async (req, res) => {
     const products = await Product.find().sort({ createdAt: -1 });
     res.json(products);
 });
 
+// 8. Products — Add
 app.post('/api/products/add', async (req, res) => {
     try {
         const newProduct = new Product(req.body);
@@ -74,7 +108,27 @@ app.post('/api/products/add', async (req, res) => {
     } catch (err) { res.status(500).json(err); }
 });
 
-// 4. Orders
+// 9. Products — Delete
+app.delete('/api/products/:id', async (req, res) => {
+    try {
+        await Product.findByIdAndDelete(req.params.id);
+        res.json({ message: "Product deleted" });
+    } catch (err) { res.status(500).json({ message: "Error" }); }
+});
+
+// 10. Products — Decrement stock when added to cart
+app.put('/api/products/decrement/:id', async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ message: "Product not found" });
+        if (product.stock <= 0) return res.status(400).json({ message: "OUT_OF_STOCK" });
+        product.stock = product.stock - 1;
+        await product.save();
+        res.json({ stock: product.stock });
+    } catch (err) { res.status(500).json({ message: "Error" }); }
+});
+
+// 11. Orders — Place
 app.post('/api/orders/place', async (req, res) => {
     try {
         const newOrder = new Order(req.body);
@@ -83,9 +137,26 @@ app.post('/api/orders/place', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// 12. Orders — Get by user
+app.get('/api/orders/user/:userId', async (req, res) => {
+    try {
+        const orders = await Order.find({ userId: req.params.userId }).sort({ createdAt: -1 });
+        res.json(orders);
+    } catch (err) { res.status(500).json({ message: "Error" }); }
+});
+
+// 13. Admin — All Orders
 app.get('/api/admin/orders', async (req, res) => {
     const orders = await Order.find().sort({ createdAt: -1 });
     res.json(orders);
+});
+
+// 14. Admin — Update Order Status
+app.put('/api/admin/orders/:id', async (req, res) => {
+    try {
+        const updated = await Order.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true });
+        res.json(updated);
+    } catch (err) { res.status(500).json({ message: "Error" }); }
 });
 
 // Server Start

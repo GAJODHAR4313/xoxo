@@ -86,8 +86,25 @@ const AdminDashboard = () => {
               <input type="number" placeholder="Stock" className="p-4 bg-zinc-50 rounded-xl text-xs font-bold outline-none border border-transparent focus:border-black/10" value={form.stock} onChange={e => setForm({...form, stock: e.target.value})} required />
               
               <select className="p-4 bg-zinc-50 rounded-xl text-xs font-bold outline-none border border-transparent focus:border-black/10" value={form.category} onChange={e => setForm({...form, category: e.target.value})} required>
-                <option value="Tees">Tees</option><option value="Bottoms">Bottoms</option><option value="Outerwear">Outerwear</option><option value="Accessories">Accessories</option>
-                <option value="Nike">Nike</option><option value="Adidas">Adidas</option><option value="Rolex">Rolex</option><option value="Casio">Casio</option>
+                <optgroup label="Shop Section (Clothing & Accessories)">
+                  <option value="Tees">Tees</option>
+                  <option value="Bottoms">Bottoms</option>
+                  <option value="Outerwear">Outerwear</option>
+                  <option value="Accessories">Accessories</option>
+                </optgroup>
+                <optgroup label="Shoes Brands">
+                  <option value="Nike">Nike</option>
+                  <option value="Adidas">Adidas</option>
+                  <option value="New Balance">New Balance</option>
+                  <option value="Asics">Asics</option>
+                </optgroup>
+                <optgroup label="Watches Brands">
+                  <option value="Rolex">Rolex</option>
+                  <option value="Omega">Omega</option>
+                  <option value="Cartier">Cartier</option>
+                  <option value="Seiko">Seiko</option>
+                  <option value="Casio">Casio</option>
+                </optgroup>
               </select>
 
               <input placeholder="Image URL" className="p-4 bg-zinc-50 rounded-xl text-xs font-bold outline-none border border-transparent focus:border-black/10 lg:col-span-2" value={form.image} onChange={e => setForm({...form, image: e.target.value})} required />

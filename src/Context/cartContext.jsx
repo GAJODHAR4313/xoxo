@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import API_BASE_URL from '../config';
 
 const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [wishlistItems, setWishlistItems] = useState([]);
-  const [isLoaded, setIsLoaded] = useState(false); 
+  const [isLoaded, setIsLoaded] = useState(false);
   const cartSyncTimeout = useRef(null);
   const wishSyncTimeout = useRef(null);
 
@@ -17,7 +18,7 @@ export const CartProvider = ({ children }) => {
         try {
           const user = JSON.parse(savedUser);
           const userId = user.id || user._id;
-          const res = await fetch(`http://localhost:5001/api/user/data/${userId}`);
+          const res = await fetch(`${API_BASE_URL}/api/user/data/${userId}`);
           if (res.ok) {
             const data = await res.json();
             setCartItems(data.cart || []);
@@ -37,7 +38,7 @@ export const CartProvider = ({ children }) => {
       const savedUser = localStorage.getItem('user');
       if (savedUser) {
         const userId = JSON.parse(savedUser).id || JSON.parse(savedUser)._id;
-        await fetch('http://localhost:5001/api/cart/sync', {
+        await fetch(`${API_BASE_URL}/api/cart/sync`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId, cartItems }),
@@ -56,7 +57,7 @@ export const CartProvider = ({ children }) => {
       const savedUser = localStorage.getItem('user');
       if (savedUser) {
         const userId = JSON.parse(savedUser).id || JSON.parse(savedUser)._id;
-        await fetch('http://localhost:5001/api/wishlist/sync', {
+        await fetch(`${API_BASE_URL}/api/wishlist/sync`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId, wishlistItems }),
@@ -68,22 +69,45 @@ export const CartProvider = ({ children }) => {
     return () => clearTimeout(wishSyncTimeout.current);
   }, [wishlistItems, isLoaded]);
 
-  const addToCart = (product) => {
+  // 4. Add to Cart — also decrements stock on backend
+  const addToCart = async (product, onStockUpdate) => {
+    // Check if already in cart — only decrement stock on first add
+    const alreadyInCart = cartItems.find(i => i._id === product._id);
+
+    if (!alreadyInCart) {
+      // Decrement stock on backend
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/products/decrement/${product._id}`, {
+          method: 'PUT',
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          if (data.message === 'OUT_OF_STOCK') {
+            alert('This item is out of stock!');
+            return false; // signal failure
+          }
+        }
+      } catch (err) {
+        console.error('Stock decrement failed', err);
+      }
+    }
+
     setCartItems(prev => {
-      // Fixed: Using _id for MongoDB compatibility
       const exists = prev.find(i => i._id === product._id);
       if (exists) return prev.map(i => i._id === product._id ? { ...i, qty: i.qty + 1 } : i);
-      
-      const price = typeof product.price === 'string' 
-        ? parseFloat(product.price.replace(/,/g, '')) 
+      const price = typeof product.price === 'string'
+        ? parseFloat(product.price.replace(/,/g, ''))
         : product.price;
-        
       return [...prev, { ...product, price, qty: 1 }];
     });
+
+    // Call callback so product list can refetch/update stock display
+    if (onStockUpdate) onStockUpdate(product._id);
+    return true; // signal success
   };
 
   const removeFromCart = (id) => setCartItems(prev => prev.filter(i => i._id !== id));
-  
+
   const updateQty = (id, delta) => {
     setCartItems(prev => prev.map(i => i._id === id ? { ...i, qty: Math.max(1, i.qty + delta) } : i));
   };
