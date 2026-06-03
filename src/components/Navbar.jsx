@@ -137,9 +137,19 @@ className="overflow-hidden border-t border-black/5"
 >
 <div className="max-w-7xl mx-auto px-6 h-[45px] flex items-center justify-between">
 <div className="flex items-center gap-10">
-<button onClick={() => setIsMobileMenuOpen(true)} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-black/80 lg:pointer-events-none">
-<Menu className="w-4 h-4" /> Categories
-</button>
+<div className="flex lg:hidden items-center gap-5 overflow-x-auto no-scrollbar">
+  {navLinks.filter(l => l.name !== 'Home').map((link) => (
+    <Link
+      key={link.name}
+      to={link.path}
+      className={`text-[10px] font-black uppercase tracking-widest transition-colors whitespace-nowrap ${
+        location.pathname === link.path ? 'text-black border-b border-black pb-0.5' : 'text-black/45 hover:text-black'
+      }`}
+    >
+      {link.name}
+    </Link>
+  ))}
+</div>
 <div className="hidden lg:flex items-center gap-8">
 {navLinks.map((link) => (
 <Link

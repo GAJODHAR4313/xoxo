@@ -9,13 +9,17 @@ const Shop = () => {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [activeCategory, setActiveCategory] = useState("All");
-  const { addToCart } = useCart();
+  const { addToCart, toggleWishlist, wishlistItems } = useCart();
   const shopCategories = ["Tees", "Bottoms", "Outerwear", "Accessories"];
 
   const fetchProducts = useCallback(async () => {
-    const res = await axios.get(`${API_BASE_URL}/api/products`);
-    const onlyShopItems = res.data.filter(p => shopCategories.includes(p.category));
-    setProducts(onlyShopItems);
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/products`);
+      const onlyShopItems = res.data.filter(p => shopCategories.includes(p.category));
+      setProducts(onlyShopItems);
+    } catch (err) {
+      console.error("Shop items load error", err);
+    }
   }, []);
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
@@ -54,35 +58,46 @@ const Shop = () => {
       </div>
 
       <main className="max-w-7xl mx-auto px-6 py-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
-        {filtered.map(p => (
-          <div key={p._id} className="group relative">
-            {p.stock <= 0 && (
-              <div className="absolute top-4 left-4 z-20 bg-red-600 text-white text-[8px] font-black px-2 py-1 uppercase tracking-widest">SOLD OUT</div>
-            )}
-            {p.stock > 0 && p.stock < 5 && (
-              <div className="absolute top-4 right-4 z-20 bg-orange-500 text-white text-[8px] font-black px-2 py-1 uppercase tracking-widest rounded-full">Only {p.stock} left</div>
-            )}
-            <div className={`aspect-[3/4] ${p.color || 'bg-zinc-100'} rounded-2xl overflow-hidden flex items-center justify-center relative ${p.stock <= 0 ? 'grayscale opacity-50' : ''}`}>
-              <img src={p.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={p.name} />
-              {p.stock > 0 && (
-                <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-4 transition-all duration-500">
-                  <button onClick={() => setSelectedProduct(p)} className="bg-white p-4 rounded-full shadow-xl hover:scale-110 transition-all"><Eye size={20} /></button>
-                  <button onClick={() => handleAddToCart(p)} className="bg-white p-4 rounded-full shadow-xl hover:scale-110 transition-all"><ShoppingCart size={20} /></button>
-                </div>
+        {filtered.map(p => {
+          const isLiked = wishlistItems?.some(w => w._id === p._id) || false;
+          return (
+            <div key={p._id} className="group relative">
+              {p.stock <= 0 ? (
+                <div className="absolute top-4 right-4 z-20 bg-red-600 text-white text-[8px] font-black px-2.5 py-1 uppercase tracking-widest rounded-full">SOLD OUT</div>
+              ) : p.stock < 5 ? (
+                <div className="absolute top-4 right-4 z-20 bg-orange-500 text-white text-[8px] font-black px-2.5 py-1 uppercase tracking-widest rounded-full">Only {p.stock} left</div>
+              ) : null}
+              <div className={`aspect-[3/4] ${p.color || 'bg-zinc-100'} rounded-2xl overflow-hidden flex items-center justify-center relative ${p.stock <= 0 ? 'grayscale opacity-50' : ''}`}>
+                <img src={p.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={p.name} />
+                
+                {/* Like / Wishlist button */}
+                <button 
+                  onClick={() => toggleWishlist(p)} 
+                  className="absolute top-4 left-4 z-20 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 transition-transform"
+                >
+                  <Heart size={14} fill={isLiked ? "red" : "none"} color={isLiked ? "red" : "black"} />
+                </button>
+
+                {p.stock > 0 && (
+                  <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-4 transition-all duration-500">
+                    <button onClick={() => setSelectedProduct(p)} className="bg-white p-4 rounded-full shadow-xl hover:scale-110 transition-all"><Eye size={20} /></button>
+                    <button onClick={() => handleAddToCart(p)} className="bg-white p-4 rounded-full shadow-xl hover:scale-110 transition-all"><ShoppingCart size={20} /></button>
+                  </div>
+                )}
+              </div>
+              <div className="mt-6 flex justify-between items-center font-black uppercase italic text-[11px] tracking-tighter px-1">
+                <span className={p.stock <= 0 ? "text-zinc-300" : ""}>{p.name}</span>
+                <span className="bg-zinc-100 px-2 py-1 rounded-md text-[10px] font-bold not-italic tracking-normal">${p.price}</span>
+              </div>
+              {p.stock > 0 && p.stock < 5 && (
+                <p className="text-[8px] font-black text-orange-500 uppercase mt-2 tracking-widest px-1">Limited: Only {p.stock} Left</p>
+              )}
+              {p.stock <= 0 && (
+                <p className="text-[8px] font-black text-red-500 uppercase mt-2 tracking-widest px-1">Out of Stock</p>
               )}
             </div>
-            <div className="mt-6 flex justify-between items-center font-black uppercase italic text-[11px] tracking-tighter px-1">
-              <span className={p.stock <= 0 ? "text-zinc-300" : ""}>{p.name}</span>
-              <span className="bg-zinc-100 px-2 py-1 rounded-md text-[10px] font-bold not-italic tracking-normal">${p.price}</span>
-            </div>
-            {p.stock > 0 && p.stock < 5 && (
-              <p className="text-[8px] font-black text-orange-500 uppercase mt-2 tracking-widest px-1">Limited: Only {p.stock} Left</p>
-            )}
-            {p.stock <= 0 && (
-              <p className="text-[8px] font-black text-red-500 uppercase mt-2 tracking-widest px-1">Out of Stock</p>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </main>
 
       <AnimatePresence>
@@ -105,13 +120,25 @@ const Shop = () => {
                 <p className="text-sm text-zinc-400 font-medium leading-relaxed mb-8 max-w-sm">{selectedProduct.detail}</p>
                 <div className="flex items-center justify-between border-t border-zinc-100 pt-8 mt-2">
                   <span className="text-3xl sm:text-4xl font-black italic tracking-tighter">${selectedProduct.price}</span>
-                  <button
-                    disabled={selectedProduct.stock <= 0}
-                    onClick={() => handleAddToCart(selectedProduct)}
-                    className={`px-6 py-4 md:px-10 md:py-5 rounded-2xl font-black uppercase italic text-[10px] sm:text-xs tracking-[0.2em] transition-all shadow-lg ${selectedProduct.stock <= 0 ? 'bg-zinc-100 text-zinc-300 cursor-not-allowed' : 'bg-black text-white hover:shadow-2xl hover:-translate-y-1'}`}
-                  >
-                    {selectedProduct.stock <= 0 ? 'Out of Stock' : 'Secure Item'}
-                  </button>
+                  <div className="flex items-center gap-4">
+                    <button 
+                      onClick={() => toggleWishlist(selectedProduct)} 
+                      className="p-4 border border-black/10 rounded-2xl hover:scale-105 transition-transform flex items-center justify-center"
+                    >
+                      <Heart 
+                        size={20} 
+                        fill={wishlistItems?.some(w => w._id === selectedProduct._id) ? "red" : "none"} 
+                        color={wishlistItems?.some(w => w._id === selectedProduct._id) ? "red" : "black"} 
+                      />
+                    </button>
+                    <button
+                      disabled={selectedProduct.stock <= 0}
+                      onClick={() => handleAddToCart(selectedProduct)}
+                      className={`px-6 py-4 md:px-10 md:py-5 rounded-2xl font-black uppercase italic text-[10px] sm:text-xs tracking-[0.2em] transition-all shadow-lg ${selectedProduct.stock <= 0 ? 'bg-zinc-100 text-zinc-300 cursor-not-allowed' : 'bg-black text-white hover:shadow-2xl hover:-translate-y-1'}`}
+                    >
+                      {selectedProduct.stock <= 0 ? 'Out of Stock' : 'Secure Item'}
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>
