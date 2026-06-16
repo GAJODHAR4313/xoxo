@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, User, Heart, ShoppingBag, Menu, Zap, LogOut, Package, ShieldCheck, UserMinus, X } from 'lucide-react'; // Added UserMinus and X icons
 import { useCart } from '../Context/cartContext';
 import axios from 'axios'; // Axios import kiya account delete ke liye
@@ -11,9 +11,19 @@ const [isSearchFocused, setIsSearchFocused] = useState(false);
 const [scrolled, setScrolled] = useState(false);
 const [user, setUser] = useState(null);
 const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Added for mobile responsiveness
+const [searchQuery, setSearchQuery] = useState('');
 const { scrollY } = useScroll();
 const location = useLocation();
+const navigate = useNavigate();
 const { cartItems, wishlistItems } = useCart();
+
+const handleSearch = (e) => {
+  if (e.key === 'Enter' && searchQuery.trim()) {
+    navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+    setIsSearchFocused(false);
+    setIsMobileMenuOpen(false);
+  }
+};
 
 useEffect(() => {
 const savedUser = localStorage.getItem('user');
@@ -79,7 +89,7 @@ scrolled ? 'bg-white/80 backdrop-blur-2xl shadow-md' : 'bg-white'
 
 <div className="flex-1 hidden lg:block">
 <motion.div animate={{ width: isSearchFocused ? '105%' : '100%' }} className="relative group max-w-[280px]">
-<input type="text" placeholder="Search..." onFocus={() => setIsSearchFocused(true)} onBlur={() => setIsSearchFocused(false)} className="w-full bg-black/5 py-2.5 px-10 rounded-full outline-none text-sm border border-transparent focus:bg-white focus:border-black/10 transition-all" />
+<input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={handleSearch} onFocus={() => setIsSearchFocused(true)} onBlur={() => setIsSearchFocused(false)} className="w-full bg-black/5 py-2.5 px-10 rounded-full outline-none text-sm border border-transparent focus:bg-white focus:border-black/10 transition-all" />
 <Search className="absolute left-3.5 top-3 text-black/50 w-4 h-4" />
 </motion.div>
 </div>
@@ -101,9 +111,9 @@ scrolled ? 'bg-white/80 backdrop-blur-2xl shadow-md' : 'bg-white'
 <span className="text-[8px] font-black uppercase tracking-widest text-amber-600/60">Admin</span>
 </Link>
 )}
-<Link to="/orders" className="flex flex-col items-center gap-1 group">
+<Link to="/profile" className="flex flex-col items-center gap-1 group">
 <Package className="w-5 h-5 text-black/70 group-hover:text-black transition-colors" />
-<span className="text-[8px] font-black uppercase tracking-widest text-black/40">Orders</span>
+<span className="text-[8px] font-black uppercase tracking-widest text-black/40">Profile</span>
 </Link>
 {/* TERMINATE BUTTON: Red icon for account deletion */}
 <button onClick={handleDeleteAccount} className="flex flex-col items-center gap-1 group opacity-40 hover:opacity-100 transition-opacity">
@@ -210,6 +220,9 @@ location.pathname === link.path ? 'text-black' : 'text-black/40 hover:text-black
             <input 
               type="text" 
               placeholder="Search..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleSearch}
               className="w-full bg-black/5 py-2.5 px-10 rounded-full outline-none text-sm border border-transparent focus:bg-white focus:border-black/10 transition-all"
             />
             <Search className="absolute left-3.5 top-3 text-black/50 w-4 h-4" />
@@ -258,12 +271,12 @@ location.pathname === link.path ? 'text-black' : 'text-black/40 hover:text-black
                 )}
                 
                 <Link 
-                  to="/orders" 
+                  to="/profile" 
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center gap-3 py-2 text-xs font-bold uppercase tracking-widest text-black/70 hover:text-black transition-colors"
                 >
-                  <Package className="w-5 h-5 text-black/70" />
-                  <span>Your Orders</span>
+                  <User className="w-5 h-5 text-black/70" />
+                  <span>My Profile</span>
                 </Link>
 
                 <button 

@@ -10,19 +10,25 @@ export const CartProvider = ({ children }) => {
   const cartSyncTimeout = useRef(null);
   const wishSyncTimeout = useRef(null);
 
-  // 1. Initial Load from DB
+  // 1. Initial Load from LocalStorage & DB
   useEffect(() => {
+    const savedCart = localStorage.getItem('localCart');
+    const savedWish = localStorage.getItem('localWish');
+    if(savedCart) setCartItems(JSON.parse(savedCart));
+    if(savedWish) setWishlistItems(JSON.parse(savedWish));
+
     const fetchUserData = async () => {
       const savedUser = localStorage.getItem('user');
       if (savedUser) {
         try {
           const user = JSON.parse(savedUser);
           const userId = user.id || user._id;
-          const res = await fetch(`${API_BASE_URL}/api/user/data/${userId}`);
+          const res = await fetch(`${API_BASE_URL}/api/user/${userId}`);
           if (res.ok) {
             const data = await res.json();
-            setCartItems(data.cart || []);
-            setWishlistItems(data.wishlist || []);
+            // DB takes precedence if it has items
+            if(data.user.cart?.length > 0) setCartItems(data.user.cart);
+            if(data.user.wishlist?.length > 0) setWishlistItems(data.user.wishlist);
           }
         } catch (err) { console.error("Load failed"); }
       }
@@ -34,14 +40,16 @@ export const CartProvider = ({ children }) => {
   // 2. Sync Cart
   useEffect(() => {
     if (!isLoaded) return;
+    localStorage.setItem('localCart', JSON.stringify(cartItems));
+
     const sync = async () => {
       const savedUser = localStorage.getItem('user');
       if (savedUser) {
         const userId = JSON.parse(savedUser).id || JSON.parse(savedUser)._id;
-        await fetch(`${API_BASE_URL}/api/cart/sync`, {
-          method: 'POST',
+        await fetch(`${API_BASE_URL}/api/user/${userId}`, {
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId, cartItems }),
+          body: JSON.stringify({ cart: cartItems }),
         });
       }
     };
@@ -53,14 +61,16 @@ export const CartProvider = ({ children }) => {
   // 3. Sync Wishlist
   useEffect(() => {
     if (!isLoaded) return;
+    localStorage.setItem('localWish', JSON.stringify(wishlistItems));
+
     const sync = async () => {
       const savedUser = localStorage.getItem('user');
       if (savedUser) {
         const userId = JSON.parse(savedUser).id || JSON.parse(savedUser)._id;
-        await fetch(`${API_BASE_URL}/api/wishlist/sync`, {
-          method: 'POST',
+        await fetch(`${API_BASE_URL}/api/user/${userId}`, {
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId, wishlistItems }),
+          body: JSON.stringify({ wishlist: wishlistItems }),
         });
       }
     };

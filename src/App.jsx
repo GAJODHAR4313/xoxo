@@ -15,7 +15,7 @@ import SignInCard from './components/SignInCard';
 import CartDrawer from './components/CartDrawer';
 import WishlistDrawer from './components/WishlistDrawer'; 
 import Checkout from './components/Checkout';
-import Orders from './components/Orders'; 
+import Profile from './components/Profile'; 
 import AdminDashboard from './components/AdminDashboard';
 
 function App() {
@@ -50,7 +50,7 @@ function App() {
             <Route path="/shoes" element={<Shoes />} />
             <Route path="/watches" element={<Watches />} />
             <Route path="/checkout" element={<Checkout />} /> 
-            <Route path="/orders" element={<Orders />} /> 
+            <Route path="/profile" element={<Profile />} /> 
             <Route path="/xoxo-admin" element={<AdminDashboard />} /> 
           </Routes>
         </AnimatePresence>
