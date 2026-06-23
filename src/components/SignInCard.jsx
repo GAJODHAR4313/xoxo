@@ -13,6 +13,11 @@ const SignInCard = ({ onClose, onLoginSuccess, onSwitch, isAdminMode }) => {
     setLoading(true);
     try {
       const res = await axios.post(`${API_BASE_URL}/api/auth/login`, formData);
+      if (isAdminMode && res.data.user.role !== 'admin') {
+        alert("Admin Access Denied");
+        setLoading(false);
+        return;
+      }
       onLoginSuccess(res.data.user);
       onClose();
     } catch (err) {

@@ -19,6 +19,12 @@ const AdminDashboard = () => {
   const [couponForm, setCouponForm] = useState({ code: '', discountPercent: 10 });
 
   useEffect(() => { 
+    const savedUser = JSON.parse(localStorage.getItem('user'));
+    if (!savedUser || savedUser.role !== 'admin') {
+      alert("Access Denied: Admins Only");
+      window.location.href = "/";
+      return;
+    }
     fetchOrders(); 
     fetchProducts(); 
     fetchCoupons();

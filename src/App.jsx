@@ -26,11 +26,6 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate(); 
 
-  useEffect(() => {
-    if (location.pathname !== '/') {
-      navigate('/', { replace: true });
-    }
-  }, []); 
 
   return (
     <CartProvider>
@@ -88,6 +83,7 @@ function App() {
               onSwitch={() => setAuthModal('signup')} 
               onLoginSuccess={(user) => {
                 localStorage.setItem('user', JSON.stringify(user));
+                navigate('/xoxo-admin');
                 window.location.reload();
               }}
             />

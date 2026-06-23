@@ -145,18 +145,34 @@ app.post('/api/admin/send-sms', async (req, res) => {
 // --- USER PROFILE ROUTES ---
 app.get('/api/user/:id', async (req, res) => {
     try {
+        if (req.params.id === 'admin') {
+            const orders = await Order.find({ userId: 'admin' }).sort({ createdAt: -1 });
+            return res.json({
+                user: { _id: 'admin', email: 'admin@xoxo.com', role: 'admin', addresses: [], cart: [], wishlist: [] },
+                orders
+            });
+        }
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: "Invalid user ID format" });
+        }
         const user = await User.findById(req.params.id);
         if (!user) return res.status(404).json({ message: "User not found" });
         const orders = await Order.find({ userId: req.params.id }).sort({ createdAt: -1 });
         res.json({ user, orders });
-    } catch (err) { res.status(500).json({ message: "Error" }); }
+    } catch (err) { res.status(500).json({ message: "Error loading profile" }); }
 });
 
 app.put('/api/user/:id', async (req, res) => {
     try {
+        if (req.params.id === 'admin') {
+            return res.json({ _id: 'admin', email: 'admin@xoxo.com', role: 'admin', addresses: [], cart: [], wishlist: [] });
+        }
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: "Invalid user ID format" });
+        }
         const updated = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(updated);
-    } catch (err) { res.status(500).json({ message: "Error" }); }
+    } catch (err) { res.status(500).json({ message: "Error updating profile" }); }
 });
 
 // --- PRODUCT REVIEWS ROUTE ---
@@ -178,21 +194,32 @@ app.post('/api/products/:id/reviews', async (req, res) => {
 app.post('/api/coupons/validate', async (req, res) => {
     try {
         const { code } = req.body;
-        const coupon = await Coupon.findOne({ code: code.toUpperCase(), isActive: true });
+        if (!code || !code.trim()) {
+            return res.status(400).json({ message: "Coupon code is required" });
+        }
+        const coupon = await Coupon.findOne({ code: code.trim().toUpperCase(), isActive: true });
         if (!coupon) return res.status(404).json({ message: "Invalid or inactive coupon" });
         res.json({ discountPercent: coupon.discountPercent });
-    } catch (err) { res.status(500).json({ message: "Error" }); }
+    } catch (err) { res.status(500).json({ message: "Error validating coupon" }); }
 });
 
 app.post('/api/admin/coupons', async (req, res) => {
     try {
+        const code = req.body.code ? req.body.code.trim().toUpperCase() : '';
+        const discountPercent = Number(req.body.discountPercent);
+        
+        if (!code) return res.status(400).json({ message: "Code is required" });
+        if (isNaN(discountPercent) || discountPercent < 1 || discountPercent > 100) {
+            return res.status(400).json({ message: "Discount must be a number between 1 and 100" });
+        }
+
         const newCoupon = new Coupon({
-            code: req.body.code.toUpperCase(),
-            discountPercent: req.body.discountPercent
+            code,
+            discountPercent
         });
         await newCoupon.save();
         res.status(201).json(newCoupon);
-    } catch (err) { res.status(500).json({ message: "Error" }); }
+    } catch (err) { res.status(500).json({ message: "Error creating coupon" }); }
 });
 
 app.get('/api/admin/coupons', async (req, res) => {
@@ -241,6 +268,11 @@ app.post('/api/orders/place', async (req, res) => {
         // Decrement stock for purchased items
         for (const item of items) {
             await Product.findByIdAndUpdate(item._id, { $inc: { stock: -item.qty } });
+        }
+        
+        // Clear user's cart in the database upon successful order placement
+        if (userId && userId !== 'admin' && mongoose.Types.ObjectId.isValid(userId)) {
+            await User.findByIdAndUpdate(userId, { cart: [] });
         }
         
         res.status(201).json({ message: "Success", orderId: newOrder._id });

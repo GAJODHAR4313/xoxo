@@ -107,11 +107,6 @@ const Checkout = () => {
         alert(`ORDER PLACED! ID: ${data.orderId}`);
         setCartItems([]);
         localStorage.removeItem('localCart');
-        await fetch(`${API_BASE_URL}/api/user/${userId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cart: [] }),
-        });
         navigate("/profile"); 
       } else {
         const errorData = await response.json();

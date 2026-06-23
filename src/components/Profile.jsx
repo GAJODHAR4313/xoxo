@@ -17,14 +17,9 @@ const Profile = () => {
     try {
         const savedUser = JSON.parse(localStorage.getItem('user'));
         if(!savedUser) { window.location.href = "/"; return; }
-        
-        // Safety check for user id format
-        const userId = savedUser.id || savedUser._id;
-        const res = await axios.get(`${API_BASE_URL}/api/user/${userId}`);
-        
-        // Backend key mismatch handling
-        setUserData(res.data.user || res.data);
-        setOrders(res.data.orders || []);
+        const res = await axios.get(`${API_BASE_URL}/api/user/${savedUser.id || savedUser._id}`);
+        setUserData(res.data.user);
+        setOrders(res.data.orders);
     } catch(err) {
         console.error("Profile Error", err);
     } finally {
@@ -40,10 +35,8 @@ const Profile = () => {
           zip: e.target.zip.value
       };
       try {
-          const updatedAddresses = [...(userData?.addresses || []), newAddress];
-          const userId = userData?._id || userData?.id;
-
-          await axios.put(`${API_BASE_URL}/api/user/${userId}`, { addresses: updatedAddresses });
+          const updatedAddresses = [...(userData.addresses || []), newAddress];
+          await axios.put(`${API_BASE_URL}/api/user/${userData._id}`, { addresses: updatedAddresses });
           setUserData({...userData, addresses: updatedAddresses});
           e.target.reset();
           alert("Address Saved!");
@@ -76,20 +69,18 @@ const Profile = () => {
                 {activeTab === 'orders' && (
                     <div className="space-y-6">
                         <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-6">Order History</h2>
-                        {orders.length === 0 ? <p className="text-sm text-black/50">No orders yet.</p> : orders.map((o, idx) => (
-                            <div key={o._id || o.id || idx} className="bg-white p-6 rounded-2xl border flex flex-col gap-4">
+                        {orders.length === 0 ? <p className="text-sm text-black/50">No orders yet.</p> : orders.map(o => (
+                            <div key={o._id} className="bg-white p-6 rounded-2xl border flex flex-col gap-4">
                                 <div className="flex justify-between items-center border-b border-black/5 pb-4">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-black/40">
-                                        Order #{o._id ? o._id.toString().slice(-6) : (o.id ? o.id.toString().slice(-6) : 'N/A')}
-                                    </span>
-                                    <span className="text-[10px] font-black uppercase tracking-widest bg-zinc-100 px-3 py-1 rounded-full">{o.status || 'Pending'}</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Order #{o._id.slice(-6)}</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest bg-zinc-100 px-3 py-1 rounded-full">{o.status}</span>
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold">{o.createdAt ? new Date(o.createdAt).toLocaleDateString() : 'N/A'}</p>
-                                    <p className="text-xl font-black italic mt-1">${o.totalAmount ? o.totalAmount.toLocaleString() : 0}</p>
+                                    <p className="text-sm font-bold">{new Date(o.createdAt).toLocaleDateString()}</p>
+                                    <p className="text-xl font-black italic mt-1">${o.totalAmount.toLocaleString()}</p>
                                 </div>
                                 <div className="flex gap-2 mt-2">
-                                    {o.items?.map((item, idx) => (
+                                    {o.items.map((item, idx) => (
                                         <img key={idx} src={item.image} alt="" className="w-12 h-12 rounded-lg object-cover bg-zinc-100 border"/>
                                     ))}
                                 </div>
@@ -102,7 +93,7 @@ const Profile = () => {
                     <div className="space-y-8">
                         <h2 className="text-2xl font-black uppercase italic tracking-tighter">Saved Addresses</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {userData?.addresses?.map((addr, idx) => (
+                            {userData.addresses?.map((addr, idx) => (
                                 <div key={idx} className="bg-white p-6 rounded-2xl border flex flex-col gap-2">
                                     <p className="font-bold text-sm">{addr.street}</p>
                                     <p className="text-xs text-black/50">{addr.city}, {addr.zip}</p>
@@ -127,11 +118,11 @@ const Profile = () => {
                         <div className="bg-white p-6 rounded-3xl border space-y-4">
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-black/40">Email</p>
-                                <p className="font-bold">{userData?.email || 'N/A'}</p>
+                                <p className="font-bold">{userData.email}</p>
                             </div>
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-black/40">Role</p>
-                                <p className="font-bold capitalize">{userData?.role || 'User'}</p>
+                                <p className="font-bold capitalize">{userData.role}</p>
                             </div>
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-widest text-black/40">Member Since</p>
@@ -145,5 +136,4 @@ const Profile = () => {
     </div>
   );
 };
-
 export default Profile;
