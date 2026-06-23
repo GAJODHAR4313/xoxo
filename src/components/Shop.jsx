@@ -129,7 +129,7 @@ const Shop = () => {
                 <span className={p.stock <= 0 ? "text-zinc-300" : ""}>{p.name}</span>
                 <div className="flex gap-2 items-center">
                     {p.rating > 0 && <span className="flex items-center gap-1 text-xs"><Star size={10} fill="gold" color="gold"/> {p.rating.toFixed(1)}</span>}
-                    <span className="bg-zinc-100 px-2 py-1 rounded-md text-[10px] font-bold not-italic tracking-normal">${p.price}</span>
+                    <span className="bg-zinc-100 px-2 py-1 rounded-md text-[10px] font-bold not-italic tracking-normal">₹{p.price}</span>
                 </div>
               </div>
               {p.stock > 0 && p.stock < 5 && <p className="text-[8px] font-black text-orange-500 uppercase mt-2 tracking-widest px-1">Limited: Only {p.stock} Left</p>}
@@ -197,7 +197,7 @@ const Shop = () => {
                 )}
 
                 <div className="flex items-center justify-between border-t border-zinc-100 pt-6 mt-auto">
-                  <span className="text-3xl font-black italic tracking-tighter">${selectedProduct.price}</span>
+                  <span className="text-3xl font-black italic tracking-tighter">₹{selectedProduct.price}</span>
                   <button
                     disabled={selectedProduct.stock <= 0}
                     onClick={() => handleAddToCart(selectedProduct)}

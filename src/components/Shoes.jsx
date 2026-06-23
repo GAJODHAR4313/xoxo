@@ -92,7 +92,7 @@ const Shoes = () => {
                       </div>
                     )}
                     <div className="absolute top-3 right-3 bg-white px-2 py-0.5 rounded-full shadow-sm">
-                      <span className="text-[10px] font-black italic">${shoe.price}</span>
+                      <span className="text-[10px] font-black italic">₹{shoe.price}</span>
                     </div>
                   </div>
                   <div className="space-y-0.5">
@@ -123,7 +123,7 @@ const Shoes = () => {
                 <h2 className="text-3xl sm:text-4xl font-black italic uppercase tracking-tighter leading-none mb-6 mt-2">{selectedShoe.name}</h2>
                 <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest leading-relaxed mb-8">{selectedShoe.detail}</p>
                 <div className="flex items-center justify-between pt-8 border-t border-neutral-50">
-                  <span className="text-3xl font-black italic">${selectedShoe.price}</span>
+                  <span className="text-3xl font-black italic">₹{selectedShoe.price}</span>
                   <button
                     disabled={selectedShoe.stock <= 0}
                     onClick={() => handleAddToCart(selectedShoe)}

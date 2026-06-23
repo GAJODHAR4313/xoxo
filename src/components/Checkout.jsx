@@ -39,7 +39,7 @@ const Checkout = () => {
   }, 0);
 
   const discountAmount = (subTotal * discountPercent) / 100;
-  const shippingFee = subTotal > 100 ? 0 : 15;
+  const shippingFee = subTotal > 1000 ? 0 : 100;
   const finalTotal = subTotal - discountAmount + shippingFee;
 
   const handleInputChange = (e) => {
@@ -166,7 +166,7 @@ const Checkout = () => {
               {cartItems.map((item, idx) => (
                 <div key={idx} className="flex justify-between items-center text-[11px] font-black uppercase italic">
                   <span>{item.name} {item.selectedSize && `(${item.selectedSize})`} x{item.qty}</span>
-                  <span>${(item.price * item.qty).toLocaleString()}</span>
+                  <span>₹{(item.price * item.qty).toLocaleString()}</span>
                 </div>
               ))}
             </div>
@@ -179,29 +179,29 @@ const Checkout = () => {
             <div className="space-y-4 mb-8 text-[11px] font-bold uppercase tracking-widest opacity-60">
                 <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>${subTotal.toLocaleString()}</span>
+                    <span>₹{subTotal.toLocaleString()}</span>
                 </div>
                 {discountPercent > 0 && (
                     <div className="flex justify-between text-green-400">
                         <span>Discount ({discountPercent}%)</span>
-                        <span>-${discountAmount.toLocaleString()}</span>
+                        <span>-₹{discountAmount.toLocaleString()}</span>
                     </div>
                 )}
                 <div className="flex justify-between">
                     <span>Shipping</span>
-                    <span>{shippingFee === 0 ? 'FREE' : `$${shippingFee}`}</span>
+                    <span>{shippingFee === 0 ? 'FREE' : `₹${shippingFee}`}</span>
                 </div>
             </div>
 
             <div className="pt-8 border-t border-white/10 flex justify-between items-end">
               <span className="text-[12px] font-black uppercase italic opacity-40">Total</span>
-              <span className="text-4xl font-black italic">${finalTotal.toLocaleString()}</span>
+              <span className="text-4xl font-black italic">₹{finalTotal.toLocaleString()}</span>
             </div>
 
             <button onClick={handlePlaceOrder} disabled={loading} className="w-full bg-white text-black py-6 mt-10 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] hover:bg-neutral-200 disabled:opacity-20 transition-colors">
               {loading ? "PROCESSING..." : "CONFIRM ORDER"}
             </button>
-            {shippingFee > 0 && <p className="text-center text-[9px] text-white/40 mt-4 uppercase tracking-widest">Free shipping on orders over $100</p>}
+            {shippingFee > 0 && <p className="text-center text-[9px] text-white/40 mt-4 uppercase tracking-widest">Free shipping on orders over ₹1,000</p>}
           </div>
         </div>
       </div>

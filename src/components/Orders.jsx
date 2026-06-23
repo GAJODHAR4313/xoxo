@@ -81,7 +81,7 @@ const Orders = () => {
                   <div>
                     <p className="text-[9px] font-black opacity-30 uppercase tracking-widest mb-1">Total Amount</p>
                     <p className="text-4xl font-black italic tracking-tighter">
-                        ${Number(order.totalAmount || 0).toLocaleString()}
+                        ₹{Number(order.totalAmount || 0).toLocaleString()}
                     </p>
                   </div>
                   <p className="text-[9px] font-black uppercase mt-4 opacity-0 group-hover:opacity-100 transition-opacity">

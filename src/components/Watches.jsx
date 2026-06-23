@@ -83,7 +83,7 @@ const Watches = () => {
                       </div>
                     )}
                     <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-md px-3 py-1 rounded-full shadow-sm">
-                      <span className="text-[11px] font-black italic">${watch.price}</span>
+                      <span className="text-[11px] font-black italic">₹{watch.price}</span>
                     </div>
                   </div>
                   <div className="px-1">
@@ -111,7 +111,7 @@ const Watches = () => {
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-black italic uppercase tracking-tighter leading-none mb-6 mt-2">{selectedWatch.name}</h2>
                 <p className="text-xs font-bold text-neutral-400 uppercase tracking-[0.1em] leading-relaxed mb-10">{selectedWatch.detail}</p>
                 <div className="grid grid-cols-2 gap-8 mb-10 py-6 border-y border-neutral-100">
-                   <div><span className="text-[9px] font-black text-neutral-300 uppercase block mb-1">Price (USD)</span><span className="text-2xl sm:text-3xl font-black italic tracking-tighter">${selectedWatch.price}</span></div>
+                   <div><span className="text-[9px] font-black text-neutral-300 uppercase block mb-1">Price (INR)</span><span className="text-2xl sm:text-3xl font-black italic tracking-tighter">₹{selectedWatch.price}</span></div>
                    <div><span className="text-[9px] font-black text-neutral-300 uppercase block mb-1">Availability</span><span className={`text-xs font-black uppercase italic ${selectedWatch.stock <= 0 ? 'text-red-500' : 'text-green-600'}`}>{selectedWatch.stock <= 0 ? 'Out of stock' : 'Ships in 24h'}</span></div>
                 </div>
                 <button

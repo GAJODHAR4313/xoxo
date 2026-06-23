@@ -67,7 +67,7 @@ const GlobalArchive = ({ isOpen, onClose }) => {
                         <Heart size={16} fill={isLiked ? "red" : "none"} color={isLiked ? "red" : "black"} className={isLiked ? "scale-110" : ""} />
                       </button>
                       <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm z-20">
-                        <span className="text-[11px] font-black italic">${item.price}</span>
+                        <span className="text-[11px] font-black italic">₹{item.price}</span>
                       </div>
                       {item.stock > 0 ? (
                         <button onClick={() => handleAddToCart(item)} className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all flex items-center justify-center">

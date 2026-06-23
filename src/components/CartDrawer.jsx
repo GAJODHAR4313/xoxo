@@ -57,7 +57,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
                       <p className="text-[10px] font-bold opacity-30 mt-1 uppercase tracking-widest">{item.category || 'Apparel'}</p>
                       <div className="flex justify-between items-end mt-4">
                         <p className="text-[11px] font-black italic">
-                          ${Number(item.price).toLocaleString()} 
+                          ₹{Number(item.price).toLocaleString()} 
                           <span className="opacity-20 ml-2">x{item.qty}</span>
                         </p>
                         <button 
@@ -77,7 +77,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
               <div className="pt-10 space-y-6">
                 <div className="flex justify-between items-end border-t-2 border-black pt-6">
                   <span className="text-[10px] font-black uppercase tracking-widest opacity-40 italic">Subtotal</span>
-                  <span className="text-2xl font-black italic">${total.toLocaleString()}</span>
+                  <span className="text-2xl font-black italic">₹{total.toLocaleString()}</span>
                 </div>
                 
                 <Link 

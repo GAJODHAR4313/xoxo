@@ -136,7 +136,7 @@ scrolled ? 'bg-white/80 backdrop-blur-2xl shadow-md' : 'bg-white'
 </div>
 <button onClick={onOpenCart} className="relative flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full active:scale-95 transition-transform">
 <ShoppingBag className="w-4 h-4" />
-<span className="text-xs font-bold">${totalPrice.toLocaleString()}</span>
+<span className="text-xs font-bold">₹{totalPrice.toLocaleString()}</span>
 </button>
 </div>
 </div>

@@ -77,7 +77,7 @@ const Profile = () => {
                                 </div>
                                 <div>
                                     <p className="text-sm font-bold">{new Date(o.createdAt).toLocaleDateString()}</p>
-                                    <p className="text-xl font-black italic mt-1">${o.totalAmount.toLocaleString()}</p>
+                                    <p className="text-xl font-black italic mt-1">₹{o.totalAmount.toLocaleString()}</p>
                                 </div>
                                 <div className="flex gap-2 mt-2">
                                     {o.items.map((item, idx) => (

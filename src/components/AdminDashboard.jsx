@@ -104,7 +104,7 @@ const AdminDashboard = () => {
                 <div className="bg-white p-6 rounded-3xl border flex flex-col gap-2">
                     <TrendingUp className="text-black/40 w-6 h-6 mb-2" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-black/50">Total Revenue</span>
-                    <span className="text-3xl font-black italic">${analytics.totalRevenue.toLocaleString()}</span>
+                    <span className="text-3xl font-black italic">₹{analytics.totalRevenue.toLocaleString()}</span>
                 </div>
                 <div className="bg-white p-6 rounded-3xl border flex flex-col gap-2">
                     <Package className="text-black/40 w-6 h-6 mb-2" />
@@ -130,7 +130,7 @@ const AdminDashboard = () => {
             <div key={o._id} className="bg-white p-6 rounded-2xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <p className="font-black text-[10px] italic">{o.shippingDetails?.firstName || 'Customer'}</p>
-                <p className="text-[10px] text-black/50">${o.totalAmount} • {new Date(o.createdAt).toLocaleDateString()}</p>
+                <p className="text-[10px] text-black/50">₹{o.totalAmount} • {new Date(o.createdAt).toLocaleDateString()}</p>
               </div>
               <select value={o.status} onChange={(e) => axios.put(`${API_BASE_URL}/api/admin/orders/${o._id}`, {status: e.target.value}).then(() => { fetchOrders(); fetchAnalytics(); })} className="bg-black text-white text-[9px] p-2 rounded-lg">
                 <option value="Processing">Processing</option><option value="Shipped">Shipped</option><option value="Delivered">Delivered</option>
@@ -163,7 +163,7 @@ const AdminDashboard = () => {
                               <img src={p.image} className="w-12 h-12 rounded-lg object-cover" alt="" />
                               <div>
                                   <p className="font-black text-[10px] uppercase">{p.name}</p>
-                                  <p className="text-[9px] text-black/50">Stock: {p.stock} • ${p.price}</p>
+                                  <p className="text-[9px] text-black/50">Stock: {p.stock} • ₹{p.price}</p>
                               </div>
                           </div>
                           <button onClick={() => handleDeleteProduct(p._id)} className="p-2 bg-red-50 text-red-500 rounded-lg"><Trash2 size={14}/></button>
