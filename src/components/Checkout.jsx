@@ -27,7 +27,9 @@ const Checkout = () => {
               try {
                   const res = await axios.get(`${API_BASE_URL}/api/user/${savedUser.id || savedUser._id}`);
                   setUserData(res.data.user);
-              } catch(e){}
+              } catch(e){
+                  console.error("Failed to fetch user data:", e);
+              }
           }
       };
       fetchUser();

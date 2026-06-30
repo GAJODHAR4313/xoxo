@@ -40,8 +40,8 @@ const AdminDashboard = () => {
     e.preventDefault(); 
     const payload = {
         ...form,
-        images: form.images.split(',').map(s => s.trim()).filter(Boolean),
-        sizes: form.sizes.split(',').map(s => s.trim().toUpperCase()).filter(Boolean),
+        images: typeof form.images === 'string' ? form.images.split(',').map(s => s.trim()).filter(Boolean) : form.images,
+        sizes: typeof form.sizes === 'string' ? form.sizes.split(',').map(s => s.trim().toUpperCase()).filter(Boolean) : form.sizes,
         stock: parseInt(form.stock) || 0
     };
     if(payload.images.length === 0 && payload.image) {
@@ -49,10 +49,19 @@ const AdminDashboard = () => {
     } else if (payload.images.length > 0 && !payload.image) {
         payload.image = payload.images[0];
     }
-    await axios.post(`${API_BASE_URL}/api/products/add`, payload); 
-    alert("Product Added!"); 
-    fetchProducts(); 
-    fetchAnalytics();
+    try {
+      await axios.post(`${API_BASE_URL}/api/products/add`, payload); 
+      alert("Product Added!"); 
+      setForm({ 
+        name: '', price: '', category: 'Tees', image: '', images: '', 
+        detail: '', color: 'bg-zinc-100', sizes: '', stock: 0 
+      });
+      fetchProducts(); 
+      fetchAnalytics();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to add product.");
+    }
   };
   
   const handleDeleteProduct = async (id) => { if(window.confirm("Delete Product?")) { await axios.delete(`${API_BASE_URL}/api/products/${id}`); fetchProducts(); fetchAnalytics(); } };
@@ -142,16 +151,34 @@ const AdminDashboard = () => {
         {activeTab === 'products' && (
             <div className="space-y-10">
                 <form onSubmit={handleAddProduct} className="bg-white p-6 rounded-3xl border grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <input placeholder="Name" className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({...form, name: e.target.value})} required />
-                  <input placeholder="Price" type="number" className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({...form, price: e.target.value})} required />
-                  <select className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({...form, category: e.target.value})}>
-                      <option value="Tees">Tees</option><option value="Bottoms">Bottoms</option><option value="Outerwear">Outerwear</option><option value="Accessories">Accessories</option>
+                  <input placeholder="Name" value={form.name} className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({...form, name: e.target.value})} required />
+                  <input placeholder="Price" value={form.price} type="number" className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({...form, price: e.target.value})} required />
+                  <select className="p-4 bg-zinc-50 rounded-xl text-xs font-bold" value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
+                      <optgroup label="Apparel & Accessories">
+                          <option value="Tees">Tees</option>
+                          <option value="Bottoms">Bottoms</option>
+                          <option value="Outerwear">Outerwear</option>
+                          <option value="Accessories">Accessories</option>
+                      </optgroup>
+                      <optgroup label="Footwear Brands">
+                          <option value="Nike">Nike</option>
+                          <option value="Adidas">Adidas</option>
+                          <option value="New Balance">New Balance</option>
+                          <option value="Asics">Asics</option>
+                      </optgroup>
+                      <optgroup label="Watches Brands">
+                          <option value="Rolex">Rolex</option>
+                          <option value="Omega">Omega</option>
+                          <option value="Cartier">Cartier</option>
+                          <option value="Seiko">Seiko</option>
+                          <option value="Casio">Casio</option>
+                      </optgroup>
                   </select>
-                  <input placeholder="Stock Quantity" type="number" className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({...form, stock: e.target.value})} required />
-                  <input placeholder="Sizes (comma separated: S, M, L)" className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({...form, sizes: e.target.value})} />
-                  <input placeholder="Main Image URL" className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({...form, image: e.target.value})} required />
-                  <input placeholder="Extra Image URLs (comma separated)" className="p-4 bg-zinc-50 rounded-xl text-xs sm:col-span-2" onChange={e => setForm({...form, images: e.target.value})} />
-                  <textarea placeholder="Description" className="p-4 bg-zinc-50 rounded-xl text-xs sm:col-span-2" onChange={e => setForm({...form, detail: e.target.value})} required />
+                  <input placeholder="Stock Quantity" value={form.stock} type="number" className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({...form, stock: e.target.value})} required />
+                  <input placeholder="Sizes (comma separated: S, M, L)" value={form.sizes} className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({...form, sizes: e.target.value})} />
+                  <input placeholder="Main Image URL" value={form.image} className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({...form, image: e.target.value})} required />
+                  <input placeholder="Extra Image URLs (comma separated)" value={form.images} className="p-4 bg-zinc-50 rounded-xl text-xs sm:col-span-2" onChange={e => setForm({...form, images: e.target.value})} />
+                  <textarea placeholder="Description" value={form.detail} className="p-4 bg-zinc-50 rounded-xl text-xs sm:col-span-2" onChange={e => setForm({...form, detail: e.target.value})} required />
                   
                   <button type="submit" className="bg-black text-white p-4 rounded-xl font-black text-xs uppercase sm:col-span-2 mt-4">Add Product</button>
                 </form>

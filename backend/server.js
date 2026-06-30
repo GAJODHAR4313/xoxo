@@ -176,6 +176,54 @@ app.put('/api/user/:id', async (req, res) => {
     } catch (err) { res.status(500).json({ message: "Error updating profile" }); }
 });
 
+// --- NEW: USER DELETION ROUTE ---
+app.delete('/api/user/delete/:id', async (req, res) => {
+    try {
+        if (req.params.id === 'admin') {
+            return res.status(400).json({ message: "Admin account cannot be deleted" });
+        }
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: "Invalid user ID format" });
+        }
+        const deletedUser = await User.findByIdAndDelete(req.params.id);
+        if (!deletedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.json({ message: "Account deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ message: "Error deleting account" });
+    }
+});
+
+// --- NEW: PRODUCT STOCK DECREMENT ROUTE ---
+app.put('/api/products/decrement/:id', async (req, res) => {
+    try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: "Invalid product ID format" });
+        }
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ message: "Product not found" });
+        if (product.stock <= 0) {
+            return res.status(400).json({ message: 'OUT_OF_STOCK' });
+        }
+        product.stock -= 1;
+        await product.save();
+        res.json(product);
+    } catch (err) {
+        res.status(500).json({ message: "Error decrementing stock" });
+    }
+});
+
+// --- NEW: GET ORDERS BY USER ID ---
+app.get('/api/orders/user/:userId', async (req, res) => {
+    try {
+        const orders = await Order.find({ userId: req.params.userId }).sort({ createdAt: -1 });
+        res.json(orders);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching user orders" });
+    }
+});
+
 // --- PRODUCT REVIEWS ROUTE ---
 app.post('/api/products/:id/reviews', async (req, res) => {
     try {
