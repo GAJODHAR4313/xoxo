@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { X, ArrowRight, Loader2 } from 'lucide-react';
 import API_BASE_URL from '../config';
 
-const SignUpCard = ({ onClose, onSwitch }) => {
+const SignUpCard = ({ onClose, onSwitch, onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,13 @@ const SignUpCard = ({ onClose, onSwitch }) => {
       const data = await response.json();
       if (response.ok) {
         setStatus({ type: 'success', msg: 'WELCOME TO XOXO.' });
-        setTimeout(() => { onSwitch(); }, 1500);
+        if (data.token && data.user && onLoginSuccess) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          setTimeout(() => { onLoginSuccess(data.user, data.token); onClose(); }, 1200);
+        } else {
+          setTimeout(() => { onSwitch(); }, 1500);
+        }
       } else {
         setStatus({ type: 'error', msg: data.message || 'SIGNUP FAILED' });
       }

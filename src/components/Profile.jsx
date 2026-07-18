@@ -17,7 +17,10 @@ const Profile = () => {
     try {
         const savedUser = JSON.parse(localStorage.getItem('user'));
         if(!savedUser) { window.location.href = "/"; return; }
-        const res = await axios.get(`${API_BASE_URL}/api/user/${savedUser.id || savedUser._id}`);
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`${API_BASE_URL}/api/user/${savedUser.id || savedUser._id}`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
         setUserData(res.data.user);
         setOrders(res.data.orders);
     } catch(err) {
@@ -35,8 +38,11 @@ const Profile = () => {
           zip: e.target.zip.value
       };
       try {
+          const token = localStorage.getItem('token');
           const updatedAddresses = [...(userData.addresses || []), newAddress];
-          await axios.put(`${API_BASE_URL}/api/user/${userData._id}`, { addresses: updatedAddresses });
+          await axios.put(`${API_BASE_URL}/api/user/${userData._id}`, { addresses: updatedAddresses }, {
+              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
           setUserData({...userData, addresses: updatedAddresses});
           e.target.reset();
           alert("Address Saved!");

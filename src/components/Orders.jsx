@@ -14,7 +14,10 @@ const Orders = () => {
 
       if (userId) {
         try {
-          const response = await fetch(`${API_BASE_URL}/api/orders/user/${userId}`);
+          const token = localStorage.getItem('token');
+          const response = await fetch(`${API_BASE_URL}/api/orders/user/${userId}`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
           
           if (!response.ok) {
             throw new Error(`Server error: ${response.status}`);

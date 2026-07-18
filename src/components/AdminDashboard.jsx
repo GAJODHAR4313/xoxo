@@ -15,47 +15,89 @@ const AdminDashboard = () => {
     name: '', price: '', category: 'Tees', image: '', images: '', 
     detail: '', color: 'bg-zinc-100', sizes: '', stock: 0 
   });
+
+  const [imagesList, setImagesList] = useState(['']);
+  const [sizeStocks, setSizeStocks] = useState({});
+
+  const handleImageChange = (idx, value) => {
+    setImagesList(prev => prev.map((url, i) => i === idx ? value : url));
+  };
+
+  const handleAddImageUrl = () => {
+    setImagesList(prev => [...prev, '']);
+  };
+
+  const handleRemoveImageUrl = (idx) => {
+    setImagesList(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const getSizesForCategory = (cat) => {
+    const footwear = ["Nike", "Adidas", "New Balance", "Asics"];
+    const watches = ["Rolex", "Omega", "Cartier", "Seiko", "Casio", "Accessories"];
+    if (footwear.includes(cat)) {
+      return ["UK 6", "UK 7", "UK 8", "UK 9", "UK 10", "UK 11", "UK 12"];
+    }
+    if (watches.includes(cat)) {
+      return ["Standard"];
+    }
+    return ["XS", "S", "M", "L", "XL", "XXL"];
+  };
+
+  const handleCategoryChange = (cat) => {
+    setForm({ ...form, category: cat });
+    setSizeStocks({});
+  };
   
   const [couponForm, setCouponForm] = useState({ code: '', discountPercent: 10 });
 
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  };
+
   useEffect(() => { 
     const savedUser = JSON.parse(localStorage.getItem('user'));
-    if (!savedUser || savedUser.role !== 'admin') {
+    const token = localStorage.getItem('token');
+    if (!savedUser || savedUser.role !== 'admin' || !token) {
       alert("Access Denied: Admins Only");
       window.location.href = "/";
       return;
     }
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     fetchOrders(); 
     fetchProducts(); 
     fetchCoupons();
     fetchAnalytics();
   }, []);
 
-  const fetchOrders = async () => { try { const res = await axios.get(`${API_BASE_URL}/api/admin/orders`); setOrders(res.data); } catch (err) { console.error(err); } };
+  const fetchOrders = async () => { try { const res = await axios.get(`${API_BASE_URL}/api/admin/orders`, { headers: getAuthHeaders() }); setOrders(res.data); } catch (err) { console.error(err); } };
   const fetchProducts = async () => { try { const res = await axios.get(`${API_BASE_URL}/api/products`); setProducts(res.data); } catch (err) { console.error(err); } };
-  const fetchCoupons = async () => { try { const res = await axios.get(`${API_BASE_URL}/api/admin/coupons`); setCoupons(res.data); } catch (err) { console.error(err); } };
-  const fetchAnalytics = async () => { try { const res = await axios.get(`${API_BASE_URL}/api/admin/analytics`); setAnalytics(res.data); } catch (err) { console.error(err); } };
+  const fetchCoupons = async () => { try { const res = await axios.get(`${API_BASE_URL}/api/admin/coupons`, { headers: getAuthHeaders() }); setCoupons(res.data); } catch (err) { console.error(err); } };
+  const fetchAnalytics = async () => { try { const res = await axios.get(`${API_BASE_URL}/api/admin/analytics`, { headers: getAuthHeaders() }); setAnalytics(res.data); } catch (err) { console.error(err); } };
 
   const handleAddProduct = async (e) => { 
     e.preventDefault(); 
+    const filteredImages = imagesList.map(s => s.trim()).filter(Boolean);
+    const activeSizes = Object.keys(sizeStocks).filter(size => sizeStocks[size] > 0);
+    const totalStock = Object.values(sizeStocks).reduce((acc, val) => acc + val, 0);
+
     const payload = {
         ...form,
-        images: typeof form.images === 'string' ? form.images.split(',').map(s => s.trim()).filter(Boolean) : form.images,
-        sizes: typeof form.sizes === 'string' ? form.sizes.split(',').map(s => s.trim().toUpperCase()).filter(Boolean) : form.sizes,
-        stock: parseInt(form.stock) || 0
+        image: filteredImages[0] || '',
+        images: filteredImages,
+        sizes: activeSizes,
+        sizeStocks: sizeStocks,
+        stock: totalStock
     };
-    if(payload.images.length === 0 && payload.image) {
-        payload.images = [payload.image];
-    } else if (payload.images.length > 0 && !payload.image) {
-        payload.image = payload.images[0];
-    }
     try {
-      await axios.post(`${API_BASE_URL}/api/products/add`, payload); 
+      await axios.post(`${API_BASE_URL}/api/products/add`, payload, { headers: getAuthHeaders() }); 
       alert("Product Added!"); 
       setForm({ 
         name: '', price: '', category: 'Tees', image: '', images: '', 
         detail: '', color: 'bg-zinc-100', sizes: '', stock: 0 
       });
+      setImagesList(['']);
+      setSizeStocks({});
       fetchProducts(); 
       fetchAnalytics();
     } catch (err) {
@@ -64,12 +106,12 @@ const AdminDashboard = () => {
     }
   };
   
-  const handleDeleteProduct = async (id) => { if(window.confirm("Delete Product?")) { await axios.delete(`${API_BASE_URL}/api/products/${id}`); fetchProducts(); fetchAnalytics(); } };
+  const handleDeleteProduct = async (id) => { if(window.confirm("Delete Product?")) { await axios.delete(`${API_BASE_URL}/api/products/${id}`, { headers: getAuthHeaders() }); fetchProducts(); fetchAnalytics(); } };
 
   const handleAddCoupon = async (e) => {
     e.preventDefault();
     try {
-        await axios.post(`${API_BASE_URL}/api/admin/coupons`, couponForm);
+        await axios.post(`${API_BASE_URL}/api/admin/coupons`, couponForm, { headers: getAuthHeaders() });
         alert("Coupon Created!");
         fetchCoupons();
         setCouponForm({ code: '', discountPercent: 10 });
@@ -78,12 +120,12 @@ const AdminDashboard = () => {
     }
   };
   
-  const handleDeleteCoupon = async (id) => { if(window.confirm("Delete Coupon?")) { await axios.delete(`${API_BASE_URL}/api/admin/coupons/${id}`); fetchCoupons(); } };
+  const handleDeleteCoupon = async (id) => { if(window.confirm("Delete Coupon?")) { await axios.delete(`${API_BASE_URL}/api/admin/coupons/${id}`, { headers: getAuthHeaders() }); fetchCoupons(); } };
 
   const handleSendSMS = async () => {
     if (!smsData.numbers || !smsData.message) return alert("Enter details");
     try {
-      await axios.post(`${API_BASE_URL}/api/admin/send-sms`, smsData);
+      await axios.post(`${API_BASE_URL}/api/admin/send-sms`, smsData, { headers: getAuthHeaders() });
       alert("SMS Sent Successfully!");
       setSmsData({ numbers: '', message: '' }); 
     } catch (err) { 
@@ -141,7 +183,7 @@ const AdminDashboard = () => {
                 <p className="font-black text-[10px] italic">{o.shippingDetails?.firstName || 'Customer'}</p>
                 <p className="text-[10px] text-black/50">₹{o.totalAmount} • {new Date(o.createdAt).toLocaleDateString()}</p>
               </div>
-              <select value={o.status} onChange={(e) => axios.put(`${API_BASE_URL}/api/admin/orders/${o._id}`, {status: e.target.value}).then(() => { fetchOrders(); fetchAnalytics(); })} className="bg-black text-white text-[9px] p-2 rounded-lg">
+              <select value={o.status} onChange={(e) => axios.put(`${API_BASE_URL}/api/admin/orders/${o._id}`, {status: e.target.value}, { headers: getAuthHeaders() }).then(() => { fetchOrders(); fetchAnalytics(); })} className="bg-black text-white text-[9px] p-2 rounded-lg">
                 <option value="Processing">Processing</option><option value="Shipped">Shipped</option><option value="Delivered">Delivered</option>
               </select>
             </div>
@@ -153,9 +195,10 @@ const AdminDashboard = () => {
                 <form onSubmit={handleAddProduct} className="bg-white p-6 rounded-3xl border grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <input placeholder="Name" value={form.name} className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({...form, name: e.target.value})} required />
                   <input placeholder="Price" value={form.price} type="number" className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({...form, price: e.target.value})} required />
-                  <select className="p-4 bg-zinc-50 rounded-xl text-xs font-bold" value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
+                  <select className="p-4 bg-zinc-50 rounded-xl text-xs font-bold" value={form.category} onChange={e => handleCategoryChange(e.target.value)}>
                       <optgroup label="Apparel & Accessories">
-                          <option value="Tees">Tees</option>
+                          <option value="Tees">Tees / T-Shirts</option>
+                          <option value="Shirts">Shirts</option>
                           <option value="Bottoms">Bottoms</option>
                           <option value="Outerwear">Outerwear</option>
                           <option value="Accessories">Accessories</option>
@@ -174,10 +217,67 @@ const AdminDashboard = () => {
                           <option value="Casio">Casio</option>
                       </optgroup>
                   </select>
-                  <input placeholder="Stock Quantity" value={form.stock} type="number" className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({...form, stock: e.target.value})} required />
-                  <input placeholder="Sizes (comma separated: S, M, L)" value={form.sizes} className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({...form, sizes: e.target.value})} />
-                  <input placeholder="Main Image URL" value={form.image} className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({...form, image: e.target.value})} required />
-                  <input placeholder="Extra Image URLs (comma separated)" value={form.images} className="p-4 bg-zinc-50 rounded-xl text-xs sm:col-span-2" onChange={e => setForm({...form, images: e.target.value})} />
+
+                  <div className="sm:col-span-2 bg-zinc-50/50 p-6 rounded-3xl border border-black/5 space-y-4">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-black/50 block">Sizes & Stock Quantities</span>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                      {getSizesForCategory(form.category).map(size => (
+                        <div key={size} className="bg-white p-3 rounded-2xl border border-black/5 flex items-center justify-between gap-2">
+                          <span className="text-xs font-black italic">{size}</span>
+                          <input 
+                            type="number" 
+                            min="0" 
+                            placeholder="0" 
+                            value={sizeStocks[size] || ''} 
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value) || 0;
+                              setSizeStocks(prev => ({ ...prev, [size]: val }));
+                            }}
+                            className="w-16 p-2 bg-zinc-50 rounded-lg text-xs text-right outline-none font-bold"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="sm:col-span-2 space-y-3">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-black/50 block animate-pulse">Product Images Carousel</span>
+                    {imagesList.map((url, idx) => (
+                      <div key={idx} className="flex gap-2 items-center">
+                        <div className="flex-1 relative">
+                          <input 
+                            placeholder={`Image URL ${idx + 1} ${idx === 0 ? '(Main Image)' : ''}`} 
+                            value={url} 
+                            onChange={(e) => handleImageChange(idx, e.target.value)} 
+                            className="w-full p-4 bg-zinc-50 rounded-xl text-xs outline-none border border-black/5 focus:border-black transition-all" 
+                            required={idx === 0}
+                          />
+                          {url && (
+                            <div className="absolute right-3 top-2 w-10 h-10 rounded-lg overflow-hidden border border-black/5 bg-white shadow-sm flex items-center justify-center">
+                              <img src={url} className="w-full h-full object-cover" alt="preview" onError={(e) => { e.target.style.display = 'none'; }} />
+                            </div>
+                          )}
+                        </div>
+                        {imagesList.length > 1 && (
+                          <button 
+                            type="button" 
+                            onClick={() => handleRemoveImageUrl(idx)} 
+                            className="px-4 py-4 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors text-[10px] font-black uppercase tracking-wider"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <button 
+                      type="button" 
+                      onClick={handleAddImageUrl} 
+                      className="w-full py-3 bg-zinc-100 text-black border border-black/10 rounded-xl hover:bg-zinc-200 transition-colors text-[10px] font-black uppercase tracking-widest"
+                    >
+                      + Add More Carousel Images
+                    </button>
+                  </div>
+
                   <textarea placeholder="Description" value={form.detail} className="p-4 bg-zinc-50 rounded-xl text-xs sm:col-span-2" onChange={e => setForm({...form, detail: e.target.value})} required />
                   
                   <button type="submit" className="bg-black text-white p-4 rounded-xl font-black text-xs uppercase sm:col-span-2 mt-4">Add Product</button>

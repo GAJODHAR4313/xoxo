@@ -42,8 +42,8 @@ const CartDrawer = ({ isOpen, onClose }) => {
                   <p className="text-[10px] font-black uppercase tracking-[0.5em]">Archive is empty</p>
                 </div>
               ) : (
-                cartItems.map((item) => (
-                  <div key={item._id} className="flex gap-6 items-start border-b border-black/5 pb-6">
+                cartItems.map((item, idx) => (
+                  <div key={`${item._id}-${item.selectedSize || ''}-${idx}`} className="flex gap-6 items-start border-b border-black/5 pb-6">
                     <div className={`w-24 h-28 ${item.color || 'bg-neutral-100'} rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden`}>
                        {item.image ? (
                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
@@ -53,7 +53,9 @@ const CartDrawer = ({ isOpen, onClose }) => {
                     </div>
 
                     <div className="flex-1">
-                      <h4 className="text-[12px] font-black uppercase italic tracking-tight">{item.name}</h4>
+                      <h4 className="text-[12px] font-black uppercase italic tracking-tight">
+                        {item.name} {item.selectedSize && `(${item.selectedSize})`}
+                      </h4>
                       <p className="text-[10px] font-bold opacity-30 mt-1 uppercase tracking-widest">{item.category || 'Apparel'}</p>
                       <div className="flex justify-between items-end mt-4">
                         <p className="text-[11px] font-black italic">
@@ -61,7 +63,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
                           <span className="opacity-20 ml-2">x{item.qty}</span>
                         </p>
                         <button 
-                          onClick={() => removeFromCart(item._id)}
+                          onClick={() => removeFromCart(item._id, item.selectedSize)}
                           className="text-red-500 hover:scale-110 transition-transform"
                         >
                           <Trash2 size={16} />

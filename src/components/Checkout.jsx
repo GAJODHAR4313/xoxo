@@ -25,7 +25,10 @@ const Checkout = () => {
           const savedUser = JSON.parse(localStorage.getItem('user'));
           if(savedUser) {
               try {
-                  const res = await axios.get(`${API_BASE_URL}/api/user/${savedUser.id || savedUser._id}`);
+                  const token = localStorage.getItem('token');
+                  const res = await axios.get(`${API_BASE_URL}/api/user/${savedUser.id || savedUser._id}`, {
+                      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                  });
                   setUserData(res.data.user);
               } catch(e){
                   console.error("Failed to fetch user data:", e);
@@ -91,9 +94,13 @@ const Checkout = () => {
     }
 
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/api/orders/place`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
             userId,
             items: cartItems,
@@ -109,7 +116,7 @@ const Checkout = () => {
         alert(`ORDER PLACED! ID: ${data.orderId}`);
         setCartItems([]);
         localStorage.removeItem('localCart');
-        navigate("/profile"); 
+        navigate("/orders"); 
       } else {
         const errorData = await response.json();
         alert(`Failed: ${errorData.message}`);

@@ -16,6 +16,7 @@ import CartDrawer from './components/CartDrawer';
 import WishlistDrawer from './components/WishlistDrawer'; 
 import Checkout from './components/Checkout';
 import Profile from './components/Profile'; 
+import Orders from './components/Orders';
 import AdminDashboard from './components/AdminDashboard';
 
 function App() {
@@ -23,9 +24,25 @@ function App() {
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false); 
   const [isWishlistOpen, setIsWishlistOpen] = useState(false); 
+  const [user, setUser] = useState(null);
   const location = useLocation();
   const navigate = useNavigate(); 
 
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    localStorage.removeItem('localCart');
+    localStorage.removeItem('localWish');
+    setUser(null);
+    navigate('/');
+  };
 
   return (
     <CartProvider>
@@ -36,6 +53,8 @@ function App() {
           onOpenAdminLogin={() => setAuthModal('admin-signin')} 
           onOpenCart={() => setIsCartOpen(true)} 
           onOpenWishlist={() => setIsWishlistOpen(true)} 
+          user={user}
+          onLogout={handleLogout}
         />
 
         <AnimatePresence mode="wait">
@@ -46,6 +65,7 @@ function App() {
             <Route path="/watches" element={<Watches />} />
             <Route path="/checkout" element={<Checkout />} /> 
             <Route path="/profile" element={<Profile />} /> 
+            <Route path="/orders" element={<Orders />} /> 
             <Route path="/xoxo-admin" element={<AdminDashboard />} /> 
           </Routes>
         </AnimatePresence>
@@ -60,6 +80,12 @@ function App() {
               key="signup" 
               onClose={() => setAuthModal(null)} 
               onSwitch={() => setAuthModal('signin')} 
+              onLoginSuccess={(user, token) => {
+                localStorage.setItem('user', JSON.stringify(user));
+                if (token) localStorage.setItem('token', token);
+                setUser(user);
+                setAuthModal(null);
+              }}
             />
           )}
 
@@ -68,9 +94,11 @@ function App() {
               key="signin" 
               onClose={() => setAuthModal(null)} 
               onSwitch={() => setAuthModal('signup')} 
-              onLoginSuccess={(user) => {
+              onLoginSuccess={(user, token) => {
                 localStorage.setItem('user', JSON.stringify(user));
-                window.location.reload();
+                if (token) localStorage.setItem('token', token);
+                setUser(user);
+                setAuthModal(null);
               }}
             />
           )}
@@ -81,10 +109,12 @@ function App() {
               isAdminMode={true} 
               onClose={() => setAuthModal(null)} 
               onSwitch={() => setAuthModal('signup')} 
-              onLoginSuccess={(user) => {
+              onLoginSuccess={(user, token) => {
                 localStorage.setItem('user', JSON.stringify(user));
+                if (token) localStorage.setItem('token', token);
+                setUser(user);
+                setAuthModal(null);
                 navigate('/xoxo-admin');
-                window.location.reload();
               }}
             />
           )}

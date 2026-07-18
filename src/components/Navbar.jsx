@@ -6,16 +6,18 @@ import { useCart } from '../Context/cartContext';
 import axios from 'axios'; // Axios import kiya account delete ke liye
 import API_BASE_URL from '../config';
 
-const Navbar = ({ onOpenSignUp, onOpenAdminLogin, onOpenCart, onOpenWishlist }) => {
+const Navbar = ({ onOpenSignUp, onOpenAdminLogin, onOpenCart, onOpenWishlist, user: propUser, onLogout }) => {
 const [isSearchFocused, setIsSearchFocused] = useState(false);
 const [scrolled, setScrolled] = useState(false);
-const [user, setUser] = useState(null);
+const [localUser, setLocalUser] = useState(null);
 const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Added for mobile responsiveness
 const [searchQuery, setSearchQuery] = useState('');
 const { scrollY } = useScroll();
 const location = useLocation();
 const navigate = useNavigate();
 const { cartItems, wishlistItems } = useCart();
+
+const user = propUser || localUser;
 
 const handleSearch = (e) => {
   if (e.key === 'Enter' && searchQuery.trim()) {
@@ -28,24 +30,34 @@ const handleSearch = (e) => {
 useEffect(() => {
 const savedUser = localStorage.getItem('user');
 if (savedUser) {
-setUser(JSON.parse(savedUser));
+setLocalUser(JSON.parse(savedUser));
 }
 }, []);
 
 const handleLogout = () => {
 localStorage.removeItem('user');
-setUser(null);
-window.location.reload();
+localStorage.removeItem('token');
+localStorage.removeItem('localCart');
+localStorage.removeItem('localWish');
+setLocalUser(null);
+if (onLogout) {
+  onLogout();
+} else {
+  navigate('/');
+  window.location.reload();
+}
 };
 
 // --- NEW: DELETE ACCOUNT FUNCTION ---
 const handleDeleteAccount = async () => {
 if(window.confirm("PERMANENTLY DELETE YOUR ACCOUNT? THIS CANNOT BE UNDONE.")) {
 try {
-await axios.delete(`${API_BASE_URL}/api/user/delete/${user.id || user._id}`);
+const token = localStorage.getItem('token');
+await axios.delete(`${API_BASE_URL}/api/user/delete/${user.id || user._id}`, {
+  headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+});
 alert("Account Terminated.");
-localStorage.removeItem('user');
-window.location.reload();
+handleLogout();
 } catch (err) {
 alert("Delete failed. Server check karo.");
 }
@@ -111,8 +123,12 @@ scrolled ? 'bg-white/80 backdrop-blur-2xl shadow-md' : 'bg-white'
 <span className="text-[8px] font-black uppercase tracking-widest text-amber-600/60">Admin</span>
 </Link>
 )}
-<Link to="/profile" className="flex flex-col items-center gap-1 group">
+<Link to="/orders" className="flex flex-col items-center gap-1 group">
 <Package className="w-5 h-5 text-black/70 group-hover:text-black transition-colors" />
+<span className="text-[8px] font-black uppercase tracking-widest text-black/40">Orders</span>
+</Link>
+<Link to="/profile" className="flex flex-col items-center gap-1 group">
+<User className="w-5 h-5 text-black/70 group-hover:text-black transition-colors" />
 <span className="text-[8px] font-black uppercase tracking-widest text-black/40">Profile</span>
 </Link>
 {/* TERMINATE BUTTON: Red icon for account deletion */}
@@ -270,6 +286,15 @@ location.pathname === link.path ? 'text-black' : 'text-black/40 hover:text-black
                   </Link>
                 )}
                 
+                <Link 
+                  to="/orders" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center gap-3 py-2 text-xs font-bold uppercase tracking-widest text-black/70 hover:text-black transition-colors"
+                >
+                  <Package className="w-5 h-5 text-black/70" />
+                  <span>My Orders</span>
+                </Link>
+
                 <Link 
                   to="/profile" 
                   onClick={() => setIsMobileMenuOpen(false)}

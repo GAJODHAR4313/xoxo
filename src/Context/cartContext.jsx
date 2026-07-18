@@ -10,6 +10,12 @@ export const CartProvider = ({ children }) => {
   const cartSyncTimeout = useRef(null);
   const wishSyncTimeout = useRef(null);
 
+  // Helper to get auth headers
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  };
+
   // 1. Initial Load from LocalStorage & DB
   useEffect(() => {
     const savedCart = localStorage.getItem('localCart');
@@ -19,11 +25,14 @@ export const CartProvider = ({ children }) => {
 
     const fetchUserData = async () => {
       const savedUser = localStorage.getItem('user');
-      if (savedUser) {
+      const token = localStorage.getItem('token');
+      if (savedUser && token) {
         try {
           const user = JSON.parse(savedUser);
           const userId = user.id || user._id;
-          const res = await fetch(`${API_BASE_URL}/api/user/${userId}`);
+          const res = await fetch(`${API_BASE_URL}/api/user/${userId}`, {
+            headers: getAuthHeaders()
+          });
           if (res.ok) {
             const data = await res.json();
             // DB takes precedence if it has items
@@ -44,11 +53,15 @@ export const CartProvider = ({ children }) => {
 
     const sync = async () => {
       const savedUser = localStorage.getItem('user');
-      if (savedUser) {
+      const token = localStorage.getItem('token');
+      if (savedUser && token) {
         const userId = JSON.parse(savedUser).id || JSON.parse(savedUser)._id;
         await fetch(`${API_BASE_URL}/api/user/${userId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            ...getAuthHeaders()
+          },
           body: JSON.stringify({ cart: cartItems }),
         });
       }
@@ -65,11 +78,15 @@ export const CartProvider = ({ children }) => {
 
     const sync = async () => {
       const savedUser = localStorage.getItem('user');
-      if (savedUser) {
+      const token = localStorage.getItem('token');
+      if (savedUser && token) {
         const userId = JSON.parse(savedUser).id || JSON.parse(savedUser)._id;
         await fetch(`${API_BASE_URL}/api/user/${userId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            ...getAuthHeaders()
+          },
           body: JSON.stringify({ wishlist: wishlistItems }),
         });
       }
@@ -79,47 +96,72 @@ export const CartProvider = ({ children }) => {
     return () => clearTimeout(wishSyncTimeout.current);
   }, [wishlistItems, isLoaded]);
 
-  // 4. Add to Cart — also decrements stock on backend
+  // 4. Add to Cart — stock checks happen cleanly without premature DB locking
   const addToCart = async (product, onStockUpdate) => {
-    // Check if already in cart — only decrement stock on first add
-    const alreadyInCart = cartItems.find(i => i._id === product._id);
+    const size = product.selectedSize;
+    const hasSizeStocks = product.sizeStocks && Object.keys(product.sizeStocks).length > 0;
 
-    if (!alreadyInCart) {
-      // Decrement stock on backend
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/products/decrement/${product._id}`, {
-          method: 'PUT',
-        });
-        if (!res.ok) {
-          const data = await res.json();
-          if (data.message === 'OUT_OF_STOCK') {
-            alert('This item is out of stock!');
-            return false; // signal failure
-          }
-        }
-      } catch (err) {
-        console.error('Stock decrement failed', err);
+    if (hasSizeStocks && size) {
+      const sizeStock = product.sizeStocks[size] || 0;
+      if (sizeStock <= 0) {
+        alert(`Size ${size} is out of stock!`);
+        return false;
+      }
+      const existingItem = cartItems.find(i => i._id === product._id && i.selectedSize === size);
+      if (existingItem && existingItem.qty >= sizeStock) {
+        alert(`Limit reached: Only ${sizeStock} available in stock for size ${size}.`);
+        return false;
+      }
+    } else {
+      if (product.stock <= 0) {
+        alert('This item is out of stock!');
+        return false;
+      }
+      const existingItem = cartItems.find(i => i._id === product._id && (!i.selectedSize || i.selectedSize === size));
+      if (existingItem && typeof product.stock === 'number' && existingItem.qty >= product.stock) {
+        alert(`Limit reached: Only ${product.stock} available in stock.`);
+        return false;
       }
     }
 
     setCartItems(prev => {
-      const exists = prev.find(i => i._id === product._id);
-      if (exists) return prev.map(i => i._id === product._id ? { ...i, qty: i.qty + 1 } : i);
+      const exists = prev.find(i => i._id === product._id && i.selectedSize === size);
+      if (exists) {
+        return prev.map(i => (i._id === product._id && i.selectedSize === size) ? { ...i, qty: i.qty + 1 } : i);
+      }
       const price = typeof product.price === 'string'
         ? parseFloat(product.price.replace(/,/g, ''))
         : product.price;
       return [...prev, { ...product, price, qty: 1 }];
     });
 
-    // Call callback so product list can refetch/update stock display
     if (onStockUpdate) onStockUpdate(product._id);
     return true; // signal success
   };
 
-  const removeFromCart = (id) => setCartItems(prev => prev.filter(i => i._id !== id));
+  const removeFromCart = (id, size) => {
+    setCartItems(prev => prev.filter(i => !(i._id === id && i.selectedSize === size)));
+  };
 
-  const updateQty = (id, delta) => {
-    setCartItems(prev => prev.map(i => i._id === id ? { ...i, qty: Math.max(1, i.qty + delta) } : i));
+  const updateQty = (id, size, delta) => {
+    setCartItems(prev => prev.map(i => {
+      if (i._id === id && i.selectedSize === size) {
+        const newQty = i.qty + delta;
+        if (newQty <= 0) return null; // Remove item if qty hits 0
+        
+        if (i.sizeStocks && typeof i.sizeStocks[size] === 'number') {
+          if (newQty > i.sizeStocks[size]) {
+            alert(`Limit reached: Only ${i.sizeStocks[size]} units available in size ${size}.`);
+            return i;
+          }
+        } else if (typeof i.stock === 'number' && newQty > i.stock) {
+          alert(`Limit reached: Only ${i.stock} units available.`);
+          return i;
+        }
+        return { ...i, qty: newQty };
+      }
+      return i;
+    }).filter(Boolean));
   };
 
   const toggleWishlist = (product) => {

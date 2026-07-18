@@ -6,6 +6,24 @@ import { ShoppingCart, Eye, X, Heart, Star, ChevronLeft, ChevronRight } from 'lu
 import { useCart } from '../Context/cartContext';
 import API_BASE_URL from '../config';
 
+const shopCategories = ["T-Shirts", "Shirts", "Bottoms", "Outerwear", "Accessories"];
+
+const getDisplayCategory = (product) => {
+  if (product.category === "Shirts") return "Shirts";
+  if (product.category === "T-Shirts") return "T-Shirts";
+  if (product.category === "Tees") {
+    const nameLower = product.name?.toLowerCase() || "";
+    if (nameLower.includes("t-shirt") || nameLower.includes("tee")) {
+      return "T-Shirts";
+    }
+    if (nameLower.includes("shirt")) {
+      return "Shirts";
+    }
+    return "T-Shirts"; // fallback
+  }
+  return product.category;
+};
+
 const Shop = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +32,6 @@ const Shop = () => {
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('search')?.toLowerCase() || '';
   const { addToCart, toggleWishlist, wishlistItems } = useCart();
-  const shopCategories = ["Tees", "Bottoms", "Outerwear", "Accessories"];
 
   // Modal specific state
   const [selectedSize, setSelectedSize] = useState("");
@@ -26,7 +43,11 @@ const Shop = () => {
   const fetchProducts = useCallback(async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/products`);
-      const onlyShopItems = res.data.filter(p => shopCategories.includes(p.category));
+      const processed = res.data.map(p => ({
+        ...p,
+        displayCategory: getDisplayCategory(p)
+      }));
+      const onlyShopItems = processed.filter(p => shopCategories.includes(p.displayCategory));
       setProducts(onlyShopItems);
     } catch (err) {
       console.error("Shop items load error", err);
@@ -61,13 +82,20 @@ const Shop = () => {
       if(!reviewText.trim()) return alert("Enter review text");
       setSubmittingReview(true);
       try {
+          const token = localStorage.getItem('token');
           const res = await axios.post(`${API_BASE_URL}/api/products/${selectedProduct._id}/reviews`, {
               userId: savedUser.id || savedUser._id,
               rating: reviewRating,
               text: reviewText
+          }, {
+              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
           });
-          setSelectedProduct(res.data);
-          setProducts(prev => prev.map(p => p._id === res.data._id ? res.data : p));
+          const updated = {
+            ...res.data,
+            displayCategory: getDisplayCategory(res.data)
+          };
+          setSelectedProduct(updated);
+          setProducts(prev => prev.map(p => p._id === updated._id ? updated : p));
           setReviewText("");
           setReviewRating(5);
       } catch(err) {
@@ -78,7 +106,7 @@ const Shop = () => {
   };
 
   const categories = ["All", ...shopCategories];
-  const filtered = (activeCategory === "All" ? products : products.filter(p => p.category === activeCategory))
+  const filtered = (activeCategory === "All" ? products : products.filter(p => p.displayCategory === activeCategory))
     .filter(p => p.name.toLowerCase().includes(searchQuery) || p.detail?.toLowerCase().includes(searchQuery));
 
   const Skeletons = () => (
@@ -90,6 +118,8 @@ const Shop = () => {
           </div>
       ))
   );
+
+  const allImages = selectedProduct ? Array.from(new Set([selectedProduct.image, ...(selectedProduct.images || [])])).filter(Boolean) : [];
 
   return (
     <div className="min-h-screen bg-white pt-24">
@@ -154,17 +184,17 @@ const Shop = () => {
               {/* Left Side: Images */}
               <div className={`flex-1 ${selectedProduct.color || 'bg-zinc-100'} flex flex-col p-4 md:p-8 min-h-[300px] md:min-h-0 relative`}>
                 <div className="flex-1 flex items-center justify-center relative">
-                    <img src={selectedProduct.images?.length > 0 ? selectedProduct.images[currentImageIndex] : selectedProduct.image} alt="" className="w-full h-full max-h-[40vh] md:max-h-none object-contain mix-blend-multiply" />
-                    {selectedProduct.images?.length > 1 && (
+                    <img src={allImages[currentImageIndex]} alt="" className="w-full h-full max-h-[40vh] md:max-h-none object-contain mix-blend-multiply" />
+                    {allImages.length > 1 && (
                         <>
-                            <button onClick={() => setCurrentImageIndex(i => i === 0 ? selectedProduct.images.length-1 : i-1)} className="absolute left-4 p-2 bg-white/50 backdrop-blur-sm rounded-full hover:bg-white"><ChevronLeft/></button>
-                            <button onClick={() => setCurrentImageIndex(i => i === selectedProduct.images.length-1 ? 0 : i+1)} className="absolute right-4 p-2 bg-white/50 backdrop-blur-sm rounded-full hover:bg-white"><ChevronRight/></button>
+                            <button onClick={() => setCurrentImageIndex(i => i === 0 ? allImages.length-1 : i-1)} className="absolute left-4 p-2 bg-white/50 backdrop-blur-sm rounded-full hover:bg-white"><ChevronLeft/></button>
+                            <button onClick={() => setCurrentImageIndex(i => i === allImages.length-1 ? 0 : i+1)} className="absolute right-4 p-2 bg-white/50 backdrop-blur-sm rounded-full hover:bg-white"><ChevronRight/></button>
                         </>
                     )}
                 </div>
-                {selectedProduct.images?.length > 1 && (
+                {allImages.length > 1 && (
                     <div className="flex gap-2 mt-4 justify-center overflow-x-auto no-scrollbar">
-                        {selectedProduct.images.map((img, idx) => (
+                        {allImages.map((img, idx) => (
                             <button key={idx} onClick={() => setCurrentImageIndex(idx)} className={`w-16 h-16 rounded-xl border-2 overflow-hidden ${idx === currentImageIndex ? 'border-black' : 'border-transparent opacity-50'}`}>
                                 <img src={img} className="w-full h-full object-cover" alt=""/>
                             </button>
@@ -176,7 +206,7 @@ const Shop = () => {
               {/* Right Side: Details & Reviews */}
               <div className="flex-1 p-6 md:p-12 bg-white flex flex-col h-[60vh] md:h-auto overflow-y-auto no-scrollbar">
                 <div className="flex gap-4 items-center mb-4">
-                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{selectedProduct.category}</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{selectedProduct.displayCategory}</p>
                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-green-600">Stock: {selectedProduct.stock}</p>
                     {selectedProduct.rating > 0 && <p className="text-[10px] font-black flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-md text-yellow-600"><Star size={10} fill="currentColor"/> {selectedProduct.rating.toFixed(1)}</p>}
                 </div>
@@ -187,11 +217,18 @@ const Shop = () => {
                     <div className="mb-6">
                         <p className="text-[10px] font-black uppercase tracking-widest text-black/40 mb-3">Select Size</p>
                         <div className="flex gap-3">
-                            {selectedProduct.sizes.map(size => (
-                                <button key={size} onClick={() => setSelectedSize(size)} className={`w-12 h-12 rounded-xl font-black border transition-all ${selectedSize === size ? 'border-black bg-black text-white' : 'border-black/10 hover:border-black/50'}`}>
-                                    {size}
-                                </button>
-                            ))}
+                            {selectedProduct.sizes.map(size => {
+                                const isOutOfStock = selectedProduct.sizeStocks && typeof selectedProduct.sizeStocks[size] === 'number' && selectedProduct.sizeStocks[size] <= 0;
+                                return (
+                                    <button 
+                                        key={size} 
+                                        disabled={isOutOfStock}
+                                        onClick={() => setSelectedSize(size)} 
+                                        className={`w-12 h-12 rounded-xl font-black border transition-all ${isOutOfStock ? 'opacity-30 border-dashed cursor-not-allowed bg-zinc-50 text-zinc-300' : selectedSize === size ? 'border-black bg-black text-white' : 'border-black/10 hover:border-black/50'}`}>
+                                        {size}
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
                 )}

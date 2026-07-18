@@ -18,7 +18,11 @@ const SignInCard = ({ onClose, onLoginSuccess, onSwitch, isAdminMode }) => {
         setLoading(false);
         return;
       }
-      onLoginSuccess(res.data.user);
+      if (res.data.token) {
+        localStorage.setItem('token', res.data.token);
+      }
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      onLoginSuccess(res.data.user, res.data.token);
       onClose();
     } catch (err) {
       alert(isAdminMode ? "Admin Access Denied" : "Invalid Credentials");
