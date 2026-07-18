@@ -3,9 +3,11 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Eye, X, Heart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCart } from '../Context/cartContext';
+import { useTheme } from '../Context/themeContext';
 import API_BASE_URL from '../config';
 
 const Watches = () => {
+  const { theme } = useTheme();
   const [products, setProducts] = useState([]);
   const [selectedWatch, setSelectedWatch] = useState(null);
   const [activeBrand, setActiveBrand] = useState("All");
@@ -81,18 +83,18 @@ const Watches = () => {
   const allImages = selectedWatch ? Array.from(new Set([selectedWatch.image, ...(selectedWatch.images || [])])).filter(Boolean) : [];
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="pt-12 pb-12 px-6 border-b border-neutral-100">
+    <div className="min-h-screen bg-white dark:bg-xoxo-dark-bg text-black dark:text-xoxo-cream transition-colors duration-300">
+      <div className="pt-24 pb-12 px-6 border-b border-neutral-100 dark:border-xoxo-dark-border">
         <div className="max-w-7xl mx-auto text-center md:text-left">
-          <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-[10px] font-black tracking-[0.5em] uppercase text-neutral-300 mb-4 italic">Precision Timing</motion.p>
-          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-6xl md:text-[9vw] font-black tracking-tighter leading-[0.8] uppercase italic">Chrono <span className="text-neutral-200">Lab.</span></motion.h1>
+          <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-[10px] font-black tracking-[0.5em] uppercase text-neutral-300 dark:text-zinc-500 mb-4 italic">Precision Timing</motion.p>
+          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-6xl md:text-[9vw] font-black tracking-tighter leading-[0.8] uppercase italic">Chrono <span className="text-neutral-200 dark:text-zinc-800">Lab.</span></motion.h1>
         </div>
       </div>
 
-      <div className="sticky top-20 z-40 bg-white/95 backdrop-blur-md border-b border-neutral-100">
+      <div className="sticky top-20 z-40 bg-white/95 dark:bg-xoxo-dark-bg/95 backdrop-blur-md border-b border-neutral-100 dark:border-xoxo-dark-border transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center overflow-x-auto no-scrollbar gap-10">
           {brandOptions.map((brand) => (
-            <button key={brand} onClick={() => setActiveBrand(brand)} className={`text-[10px] font-black uppercase tracking-widest transition-all ${activeBrand === brand ? "text-black border-b-2 border-black pb-1 italic scale-110" : "text-neutral-300 hover:text-black"}`}>{brand}</button>
+            <button key={brand} onClick={() => setActiveBrand(brand)} className={`text-[10px] font-black uppercase tracking-widest transition-all ${activeBrand === brand ? "text-black dark:text-xoxo-gold border-b-2 border-black dark:border-xoxo-gold pb-1 italic scale-110" : "text-neutral-300 hover:text-black dark:hover:text-xoxo-cream"}`}>{brand}</button>
           ))}
         </div>
       </div>
@@ -109,24 +111,24 @@ const Watches = () => {
                 ) : watch.stock < 5 ? (
                   <div className="absolute top-4 right-4 z-20 bg-orange-500 text-white text-[8px] font-black px-2.5 py-1 uppercase tracking-widest rounded-full">Only {watch.stock} left</div>
                 ) : null}
-                <div className={`aspect-[3/4] ${watch.color || 'bg-stone-50'} rounded-2xl overflow-hidden flex items-center justify-center relative ${watch.stock <= 0 ? 'grayscale opacity-50' : ''}`}>
+                <div className={`aspect-[3/4] ${watch.color || 'bg-stone-50 dark:bg-xoxo-dark-card'} rounded-2xl overflow-hidden flex items-center justify-center relative ${watch.stock <= 0 ? 'grayscale opacity-50' : ''}`}>
                   <img src={watch.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={watch.name} />
                   
-                  <button onClick={() => toggleWishlist(watch)} className="absolute top-4 left-4 z-20 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 transition-transform">
-                    <Heart size={14} fill={isLiked ? "red" : "none"} color={isLiked ? "red" : "black"} />
+                  <button onClick={() => toggleWishlist(watch)} className="absolute top-4 left-4 z-20 p-2 bg-white/80 dark:bg-xoxo-dark-card/85 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 transition-transform">
+                    <Heart size={14} fill={isLiked ? "red" : "none"} color={isLiked ? "red" : (theme === 'dark' ? "#d4af37" : "black")} />
                   </button>
 
                   {watch.stock > 0 && (
                     <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-4 transition-all duration-500">
-                      <button onClick={() => { setSelectedWatch(watch); setSelectedSize(""); setCurrentImageIndex(0); }} className="bg-white p-4 rounded-full shadow-xl hover:scale-110 transition-all"><Eye size={20} /></button>
+                      <button onClick={() => { setSelectedWatch(watch); setSelectedSize(""); setCurrentImageIndex(0); }} className="bg-white dark:bg-xoxo-dark-bg text-black dark:text-xoxo-cream p-4 rounded-full shadow-xl hover:scale-110 transition-all"><Eye size={20} /></button>
                     </div>
                   )}
                 </div>
                 <div className="mt-6 flex justify-between items-center font-black uppercase italic text-[11px] tracking-tighter px-1">
-                  <span className={watch.stock <= 0 ? "text-zinc-300" : ""}>{watch.name}</span>
+                  <span className={watch.stock <= 0 ? "text-zinc-300 dark:text-zinc-700" : ""}>{watch.name}</span>
                   <div className="flex gap-2 items-center">
-                      {watch.rating > 0 && <span className="flex items-center gap-1 text-xs"><Star size={10} fill="gold" color="gold"/> {watch.rating.toFixed(1)}</span>}
-                      <span className="bg-zinc-100 px-2 py-1 rounded-md text-[10px] font-bold not-italic tracking-normal">₹{watch.price}</span>
+                      {watch.rating > 0 && <span className="flex items-center gap-1 text-xs"><Star size={10} fill="#d4af37" color="#d4af37"/> {watch.rating.toFixed(1)}</span>}
+                      <span className="bg-zinc-100 dark:bg-xoxo-dark-card text-zinc-800 dark:text-xoxo-cream/80 px-2 py-1 rounded-md text-[10px] font-bold not-italic tracking-normal border border-transparent dark:border-xoxo-dark-border">₹{watch.price}</span>
                   </div>
                 </div>
                 {watch.stock > 0 && watch.stock < 5 && <p className="text-[8px] font-black text-orange-500 uppercase mt-2 tracking-widest px-1">Limited: Only {watch.stock} Left</p>}
@@ -143,27 +145,27 @@ const Watches = () => {
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto"
             onClick={() => setSelectedWatch(null)}>
             <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 30 }}
-              className="bg-white w-full max-w-5xl rounded-[24px] md:rounded-[40px] overflow-hidden flex flex-col md:flex-row relative shadow-2xl my-auto"
+              className="bg-white dark:bg-xoxo-dark-card w-full max-w-5xl rounded-[24px] md:rounded-[40px] overflow-hidden flex flex-col md:flex-row relative shadow-2xl my-auto border border-black/5 dark:border-xoxo-dark-border text-black dark:text-xoxo-cream"
               onClick={e => e.stopPropagation()}>
-              <button onClick={() => setSelectedWatch(null)} className="absolute top-4 right-4 md:top-8 md:right-8 z-20 p-2.5 md:p-3 bg-white/50 backdrop-blur-md md:bg-black text-black md:text-white rounded-full hover:rotate-90 transition-all shadow-lg">
+              <button onClick={() => setSelectedWatch(null)} className="absolute top-4 right-4 md:top-8 md:right-8 z-20 p-2.5 md:p-3 bg-white/50 dark:bg-xoxo-dark-bg/50 backdrop-blur-md md:bg-black md:dark:bg-xoxo-gold text-black dark:text-black md:text-white md:dark:text-black rounded-full hover:rotate-90 transition-all shadow-lg border border-transparent dark:border-xoxo-dark-border">
                 <X size={20} />
               </button>
               
               {/* Left Side: Images */}
-              <div className={`w-full md:w-[45%] min-h-[250px] md:min-h-[300px] ${selectedWatch.color || 'bg-stone-50'} flex flex-col p-4 md:p-8 relative`}>
+              <div className={`w-full md:w-[45%] min-h-[250px] md:min-h-[300px] ${selectedWatch.color || 'bg-stone-50 dark:bg-xoxo-dark-bg'} flex flex-col p-4 md:p-8 relative`}>
                 <div className="flex-1 flex items-center justify-center relative">
-                    <img src={allImages[currentImageIndex]} alt="" className="w-full h-full max-h-[40vh] md:max-h-none object-contain mix-blend-multiply" />
+                    <img src={allImages[currentImageIndex]} alt="" className="w-full h-full max-h-[40vh] md:max-h-none object-contain mix-blend-multiply dark:mix-blend-normal" />
                     {allImages.length > 1 && (
                         <>
-                            <button onClick={() => setCurrentImageIndex(i => i === 0 ? allImages.length-1 : i-1)} className="absolute left-4 p-2 bg-white/50 backdrop-blur-sm rounded-full hover:bg-white"><ChevronLeft/></button>
-                            <button onClick={() => setCurrentImageIndex(i => i === allImages.length-1 ? 0 : i+1)} className="absolute right-4 p-2 bg-white/50 backdrop-blur-sm rounded-full hover:bg-white"><ChevronRight/></button>
+                            <button onClick={() => setCurrentImageIndex(i => i === 0 ? allImages.length-1 : i-1)} className="absolute left-4 p-2 bg-white/50 dark:bg-xoxo-dark-bg/50 backdrop-blur-sm rounded-full hover:bg-white dark:hover:bg-xoxo-dark-card border border-transparent dark:border-xoxo-dark-border"><ChevronLeft className="text-black dark:text-white" /></button>
+                            <button onClick={() => setCurrentImageIndex(i => i === allImages.length-1 ? 0 : i+1)} className="absolute right-4 p-2 bg-white/50 dark:bg-xoxo-dark-bg/50 backdrop-blur-sm rounded-full hover:bg-white dark:hover:bg-xoxo-dark-card border border-transparent dark:border-xoxo-dark-border"><ChevronRight className="text-black dark:text-white" /></button>
                         </>
                     )}
                 </div>
                 {allImages.length > 1 && (
                     <div className="flex gap-2 mt-4 justify-center overflow-x-auto no-scrollbar">
                         {allImages.map((img, idx) => (
-                            <button key={idx} onClick={() => setCurrentImageIndex(idx)} className={`w-16 h-16 rounded-xl border-2 overflow-hidden ${idx === currentImageIndex ? 'border-black' : 'border-transparent opacity-50'}`}>
+                            <button key={idx} onClick={() => setCurrentImageIndex(idx)} className={`w-16 h-16 rounded-xl border-2 overflow-hidden ${idx === currentImageIndex ? 'border-black dark:border-xoxo-gold' : 'border-transparent opacity-50'}`}>
                                 <img src={img} className="w-full h-full object-cover" alt=""/>
                             </button>
                         ))}
@@ -172,18 +174,18 @@ const Watches = () => {
               </div>
               
               {/* Right Side: Details & Reviews */}
-              <div className="flex-1 p-6 md:p-12 bg-white flex flex-col h-[60vh] md:h-auto overflow-y-auto no-scrollbar">
+              <div className="flex-1 p-6 md:p-12 bg-white dark:bg-xoxo-dark-card flex flex-col h-[60vh] md:h-auto overflow-y-auto no-scrollbar">
                 <div className="flex gap-4 items-center mb-4">
-                    <span className="text-[10px] font-black tracking-[0.5em] text-neutral-300 uppercase">{selectedWatch.category}</span>
+                    <span className="text-[10px] font-black tracking-[0.5em] text-neutral-300 dark:text-zinc-500 uppercase">{selectedWatch.category}</span>
                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-green-600">Stock: {selectedWatch.stock}</p>
-                    {selectedWatch.rating > 0 && <p className="text-[10px] font-black flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-md text-yellow-600"><Star size={10} fill="currentColor"/> {selectedWatch.rating.toFixed(1)}</p>}
+                    {selectedWatch.rating > 0 && <p className="text-[10px] font-black flex items-center gap-1 bg-yellow-50 dark:bg-yellow-950/10 px-2 py-1 rounded-md text-yellow-600 dark:text-xoxo-gold"><Star size={10} fill="currentColor"/> {selectedWatch.rating.toFixed(1)}</p>}
                 </div>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-black italic uppercase tracking-tighter leading-none mb-6 mt-2">{selectedWatch.name}</h2>
-                <p className="text-xs font-bold text-neutral-400 uppercase tracking-[0.1em] leading-relaxed mb-10">{selectedWatch.detail}</p>
+                <p className="text-xs font-bold text-neutral-400 dark:text-zinc-400 uppercase tracking-[0.1em] leading-relaxed mb-10">{selectedWatch.detail}</p>
                 
                 {selectedWatch.sizes?.length > 0 && (
                     <div className="mb-6">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-black/40 mb-3">Select Size</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40 mb-3">Select Size</p>
                         <div className="flex gap-3">
                             {selectedWatch.sizes.map(size => {
                                 const isOutOfStock = selectedWatch.sizeStocks && typeof selectedWatch.sizeStocks[size] === 'number' && selectedWatch.sizeStocks[size] <= 0;
@@ -192,7 +194,7 @@ const Watches = () => {
                                         key={size} 
                                         disabled={isOutOfStock}
                                         onClick={() => setSelectedSize(size)} 
-                                        className={`w-12 h-12 rounded-xl font-black border transition-all ${isOutOfStock ? 'opacity-30 border-dashed cursor-not-allowed bg-zinc-50 text-zinc-300' : selectedSize === size ? 'border-black bg-black text-white' : 'border-black/10 hover:border-black/50'}`}>
+                                        className={`w-12 h-12 rounded-xl font-black border transition-all ${isOutOfStock ? 'opacity-30 border-dashed cursor-not-allowed bg-zinc-50 dark:bg-xoxo-dark-bg text-zinc-300 dark:text-zinc-600 border-zinc-100 dark:border-xoxo-dark-border' : selectedSize === size ? 'border-black dark:border-xoxo-gold bg-black dark:bg-xoxo-gold text-white dark:text-black' : 'border-black/10 dark:border-xoxo-dark-border hover:border-black/50 dark:hover:border-xoxo-gold text-black dark:text-xoxo-cream'}`}>
                                         {size}
                                     </button>
                                 );
@@ -201,16 +203,16 @@ const Watches = () => {
                     </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-8 mb-10 py-6 border-y border-neutral-100">
-                   <div><span className="text-[9px] font-black text-neutral-300 uppercase block mb-1">Price (INR)</span><span className="text-2xl sm:text-3xl font-black italic tracking-tighter">₹{selectedWatch.price}</span></div>
-                   <div><span className="text-[9px] font-black text-neutral-300 uppercase block mb-1">Availability</span><span className={`text-xs font-black uppercase italic ${selectedWatch.stock <= 0 ? 'text-red-500' : 'text-green-600'}`}>{selectedWatch.stock <= 0 ? 'Out of stock' : 'Ships in 24h'}</span></div>
+                <div className="grid grid-cols-2 gap-8 mb-10 py-6 border-y border-neutral-100 dark:border-xoxo-dark-border">
+                   <div><span className="text-[9px] font-black text-neutral-300 dark:text-zinc-500 uppercase block mb-1">Price (INR)</span><span className="text-2xl sm:text-3xl font-black italic tracking-tighter">₹{selectedWatch.price}</span></div>
+                   <div><span className="text-[9px] font-black text-neutral-300 dark:text-zinc-500 uppercase block mb-1">Availability</span><span className={`text-xs font-black uppercase italic ${selectedWatch.stock <= 0 ? 'text-red-500' : 'text-green-600'}`}>{selectedWatch.stock <= 0 ? 'Out of stock' : 'Ships in 24h'}</span></div>
                 </div>
 
                 <div className="flex items-center justify-between pt-4 mt-auto">
                   <button
                     disabled={selectedWatch.stock <= 0}
                     onClick={() => handleAddToCart(selectedWatch)}
-                    className={`w-full py-4 md:py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-opacity flex items-center justify-center gap-3 ${selectedWatch.stock <= 0 ? 'bg-zinc-100 text-zinc-300 cursor-not-allowed' : 'bg-black text-white hover:opacity-90'}`}>
+                    className={`w-full py-4 md:py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-opacity flex items-center justify-center gap-3 ${selectedWatch.stock <= 0 ? 'bg-zinc-100 dark:bg-xoxo-dark-bg text-zinc-300 dark:text-zinc-600 cursor-not-allowed' : 'bg-black dark:bg-xoxo-gold text-white dark:text-black hover:opacity-90 border border-transparent dark:border-white/10'}`}>
                     <ShoppingCart size={18} /> {selectedWatch.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
                   </button>
                 </div>
@@ -219,33 +221,33 @@ const Watches = () => {
                 )}
 
                 {/* Reviews Section */}
-                <div className="mt-12 border-t border-zinc-100 pt-8">
+                <div className="mt-12 border-t border-neutral-100 dark:border-xoxo-dark-border pt-8">
                     <h3 className="text-xl font-black uppercase italic tracking-tighter mb-6">Customer Reviews</h3>
                     <div className="space-y-4 mb-8">
                         {selectedWatch.reviews?.length > 0 ? selectedWatch.reviews.map((r, i) => (
-                            <div key={i} className="bg-zinc-50 p-4 rounded-2xl">
+                            <div key={i} className="bg-zinc-50 dark:bg-xoxo-dark-bg p-4 rounded-2xl border border-transparent dark:border-xoxo-dark-border">
                                 <div className="flex items-center gap-2 mb-2">
                                     <div className="flex text-yellow-400">
-                                        {[...Array(5)].map((_, idx) => <Star key={idx} size={12} fill={idx < r.rating ? "currentColor" : "none"} color={idx < r.rating ? "currentColor" : "#ccc"}/>)}
+                                        {[...Array(5)].map((_, idx) => <Star key={idx} size={12} fill={idx < r.rating ? "currentColor" : "none"} color={idx < r.rating ? "currentColor" : (theme === 'dark' ? "#24201b" : "#ccc")}/>)}
                                     </div>
-                                    <span className="text-[10px] font-bold text-zinc-400">{new Date(r.createdAt).toLocaleDateString()}</span>
+                                    <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500">{new Date(r.createdAt).toLocaleDateString()}</span>
                                 </div>
                                 <p className="text-sm font-medium">{r.text}</p>
                             </div>
-                        )) : <p className="text-xs text-zinc-400 font-medium">No reviews yet. Be the first to review!</p>}
+                        )) : <p className="text-xs text-zinc-400 dark:text-zinc-500 font-medium">No reviews yet. Be the first to review!</p>}
                     </div>
                     
-                    <div className="bg-zinc-50 p-6 rounded-3xl border">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-black/60 mb-3">Write a Review</p>
+                    <div className="bg-zinc-50 dark:bg-xoxo-dark-bg p-6 rounded-3xl border border-black/5 dark:border-xoxo-dark-border">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-black/60 dark:text-xoxo-cream/60 mb-3">Write a Review</p>
                         <div className="flex items-center gap-2 mb-4">
                             {[1,2,3,4,5].map(star => (
                                 <button key={star} onClick={() => setReviewRating(star)}>
-                                    <Star size={20} fill={star <= reviewRating ? "gold" : "none"} color={star <= reviewRating ? "gold" : "#ccc"}/>
+                                    <Star size={20} fill={star <= reviewRating ? "#d4af37" : "none"} color={star <= reviewRating ? "#d4af37" : (theme === 'dark' ? "#24201b" : "#ccc")}/>
                                 </button>
                             ))}
                         </div>
-                        <textarea value={reviewText} onChange={e=>setReviewText(e.target.value)} placeholder="Your review..." className="w-full p-4 rounded-xl text-xs outline-none bg-white border border-black/5 mb-4 resize-none h-24"/>
-                        <button disabled={submittingReview} onClick={submitReview} className="bg-black text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50">
+                        <textarea value={reviewText} onChange={e=>setReviewText(e.target.value)} placeholder="Your review..." className="w-full p-4 rounded-xl text-xs outline-none bg-white dark:bg-xoxo-dark-card border border-black/5 dark:border-xoxo-dark-border text-black dark:text-xoxo-cream mb-4 resize-none h-24 focus:border-black dark:focus:border-xoxo-gold"/>
+                        <button disabled={submittingReview} onClick={submitReview} className="bg-black dark:bg-xoxo-gold text-white dark:text-black px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50 border border-transparent dark:border-white/10">
                             {submittingReview ? 'Submitting...' : 'Submit Review'}
                         </button>
                     </div>

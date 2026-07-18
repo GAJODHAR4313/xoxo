@@ -9,29 +9,13 @@ const Hero = ({ onOpenArchive }) => {
   // --- SCROLL ANIMATIONS ---
   const { scrollY } = useScroll();
 
-  const rotateBadge = useTransform(
-    scrollY,
-    [0, 2000],
-    [0, 360]
-  );
+  const textMove = useTransform(scrollY, [0, 800], [0, -300]);
 
-  const textMove = useTransform(
-    scrollY,
-    [500, 1500],
-    [0, -200]
-  );
-
-  // Animation Constants
   const fadeInUp = {
-    hidden: {
-      opacity: 0,
-      y: 60
-    },
-
-    visible: {
-      opacity: 1,
+    hidden: { opacity: 0, y: 35 },
+    visible: { 
+      opacity: 1, 
       y: 0,
-
       transition: {
         duration: 0.8,
         ease: [0.215, 0.61, 0.355, 1]
@@ -40,13 +24,8 @@ const Hero = ({ onOpenArchive }) => {
   };
 
   const staggerContainer = {
-    hidden: {
-      opacity: 0
-    },
-
+    hidden: {},
     visible: {
-      opacity: 1,
-
       transition: {
         staggerChildren: 0.2
       }
@@ -55,7 +34,7 @@ const Hero = ({ onOpenArchive }) => {
 
   return (
 
-    <div className="w-full bg-[#F9F9F9] antialiased text-black overflow-x-hidden">
+    <div className="w-full bg-[#F9F9F9] dark:bg-xoxo-dark-bg antialiased text-black dark:text-xoxo-cream overflow-x-hidden transition-colors duration-300">
 
       {/* GLOBAL STYLE */}
       <style>{`
@@ -83,7 +62,7 @@ const Hero = ({ onOpenArchive }) => {
       `}</style>
 
       {/* SECTION 1 HERO - Fixed height for mobile */}
-      <section className="relative w-full min-h-[90vh] md:h-[80vh] flex flex-col md:flex-row overflow-hidden bg-[#F2F0E9] border-b border-black/5">
+      <section className="relative w-full min-h-[90vh] md:h-[80vh] flex flex-col md:flex-row overflow-hidden bg-[#F2F0E9] dark:bg-xoxo-dark-card border-b border-black/5 dark:border-xoxo-dark-border transition-colors duration-300">
 
         {/* LEFT */}
         <div className="flex-1 flex flex-col justify-center px-6 sm:px-8 md:px-24 py-16 md:py-0">
@@ -103,7 +82,7 @@ const Hero = ({ onOpenArchive }) => {
 
             <motion.h1
               variants={fadeInUp}
-              className="hero-title text-[15vw] sm:text-[12vw] md:text-[4.5vw] text-black mb-6 md:mb-8"
+              className="hero-title text-[15vw] sm:text-[12vw] md:text-[4.5vw] text-black dark:text-xoxo-cream mb-6 md:mb-8"
             >
               Limited Edition For <br />
               The Elite Style
@@ -125,19 +104,19 @@ const Hero = ({ onOpenArchive }) => {
                 onClick={onOpenArchive}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="group relative bg-black text-white px-7 md:px-10 py-4 md:py-5 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.25em] md:tracking-[0.3em] overflow-hidden transition-all duration-500 border border-black shadow-lg flex items-center gap-4 italic"
+                className="group relative bg-black dark:bg-xoxo-gold text-white dark:text-black px-7 md:px-10 py-4 md:py-5 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.25em] md:tracking-[0.3em] overflow-hidden transition-all duration-500 border border-black dark:border-xoxo-gold shadow-lg flex items-center gap-4 italic"
               >
 
-                <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-white dark:bg-xoxo-dark-bg translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
 
-                <span className="relative z-10 group-hover:text-black transition-colors duration-500">
+                <span className="relative z-10 group-hover:text-black dark:group-hover:text-xoxo-gold transition-colors duration-500">
                   ENTER ARCHIVE
                 </span>
 
                 <motion.div
                   animate={{ x: [0, 5, 0] }}
                   transition={{ repeat: Infinity, duration: 1.5 }}
-                  className="relative z-10 group-hover:text-black transition-colors duration-500"
+                  className="relative z-10 group-hover:text-black dark:group-hover:text-xoxo-gold transition-colors duration-500"
                 >
                   <ArrowUpRight size={18} />
                 </motion.div>
@@ -155,7 +134,7 @@ const Hero = ({ onOpenArchive }) => {
           initial={{ clipPath: 'inset(0% 0% 0% 100%)' }}
           animate={{ clipPath: 'inset(0% 0% 0% 0%)' }}
           transition={{ duration: 1.2, ease: [0.77, 0, 0.175, 1] }}
-          className="flex-1 relative h-[30vh] md:h-full bg-gray-200"
+          className="flex-1 relative h-[30vh] md:h-full bg-gray-200 dark:bg-xoxo-dark-card"
         >
 
           <video
@@ -174,7 +153,7 @@ const Hero = ({ onOpenArchive }) => {
       </section>
 
       {/* FLOATING TEXT */}
-      <div className="py-12 md:py-20 bg-white overflow-hidden border-b border-black/5">
+      <div className="py-12 md:py-20 bg-white dark:bg-xoxo-dark-bg overflow-hidden border-b border-black/5 dark:border-xoxo-dark-border transition-colors duration-300">
 
         <motion.div
           style={{ x: textMove }}
@@ -203,7 +182,7 @@ const Hero = ({ onOpenArchive }) => {
             className="md:col-span-5 group"
           >
 
-            <div className="relative aspect-[3/4] bg-[#EDEDED] overflow-hidden rounded-2xl">
+            <div className="relative aspect-[3/4] bg-[#EDEDED] dark:bg-xoxo-dark-card overflow-hidden rounded-2xl transition-colors duration-300">
 
               <img
                 src="/Ellipse 4.png"
@@ -213,7 +192,7 @@ const Hero = ({ onOpenArchive }) => {
 
               <div className="absolute top-5 left-5 md:top-8 md:left-8">
 
-                <span className="text-[9px] md:text-[10px] font-black tracking-widest bg-black text-white px-3 py-2 md:px-4 rounded-full uppercase">
+                <span className="text-[9px] md:text-[10px] font-black tracking-widest bg-black dark:bg-xoxo-gold text-white dark:text-black px-3 py-2 md:px-4 rounded-full uppercase">
                   The Legend Series
                 </span>
 
@@ -266,7 +245,7 @@ const Hero = ({ onOpenArchive }) => {
 
                 <motion.button
                   variants={fadeInUp}
-                  className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest border-b-2 border-black pb-2 hover:opacity-50 transition-all italic"
+                  className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest border-b-2 border-black dark:border-xoxo-gold pb-2 hover:opacity-50 transition-all italic text-black dark:text-xoxo-gold"
                 >
                   Discover Collection
                   <ArrowUpRight size={16} />
@@ -311,7 +290,7 @@ const Hero = ({ onOpenArchive }) => {
       </section>
 
       {/* SECTION 4 */}
-      <section className="py-16 md:py-40 bg-white relative">
+      <section className="py-16 md:py-40 bg-white dark:bg-xoxo-dark-bg relative transition-colors duration-300">
 
         <div className="max-w-7xl mx-auto px-5 md:px-6">
 
@@ -325,7 +304,7 @@ const Hero = ({ onOpenArchive }) => {
                 whileInView={{ clipPath: 'inset(0% 0% 0% 0%)' }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
                 viewport={{ once: true, margin: "-100px" }}
-                className="relative aspect-[4/5] overflow-hidden rounded-sm bg-[#f0f0f0]"
+                className="relative aspect-[4/5] overflow-hidden rounded-sm bg-[#f0f0f0] dark:bg-xoxo-dark-card"
               >
 
                 <img
@@ -355,7 +334,7 @@ const Hero = ({ onOpenArchive }) => {
                 >
                   Beyond <br />
                   Conventional <br />
-                  <span className="text-black/20">
+                  <span className="text-black/20 dark:text-white/20">
                     Design.
                   </span>
                 </motion.h3>
@@ -368,7 +347,7 @@ const Hero = ({ onOpenArchive }) => {
                 <motion.div
                   variants={fadeInUp}
                   whileHover={{ y: -20, rotate: 2 }}
-                  className="relative aspect-square w-56 md:w-2/3 bg-[#F2F0E9] mx-auto md:ml-0 shadow-2xl border-8 border-white overflow-hidden group cursor-pointer"
+                  className="relative aspect-square w-56 md:w-2/3 bg-[#F2F0E9] dark:bg-xoxo-dark-card mx-auto md:ml-0 shadow-2xl border-8 border-white dark:border-xoxo-dark-border overflow-hidden group cursor-pointer"
                 >
 
                   <img
@@ -390,7 +369,7 @@ const Hero = ({ onOpenArchive }) => {
       </section>
 
       {/* SECTION 5 */}
-      <section className="py-20 md:py-32 bg-black text-white rounded-t-[2rem] md:rounded-t-[4rem]">
+      <section className="py-20 md:py-32 bg-black dark:bg-xoxo-dark-card text-white rounded-t-[2rem] md:rounded-t-[4rem] border-t border-transparent dark:border-xoxo-dark-border transition-colors duration-300">
 
         <div className="px-5 md:px-20 mb-12 flex justify-between items-end">
           <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter leading-none">
@@ -427,13 +406,13 @@ const Hero = ({ onOpenArchive }) => {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-white py-16 px-6 md:px-8 border-t border-black/5">
+      <footer className="bg-white dark:bg-xoxo-dark-bg py-16 px-6 md:px-8 border-t border-black/5 dark:border-xoxo-dark-border transition-colors duration-300">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-10">
-          <h2 className="text-3xl font-black italic tracking-tighter uppercase">XOXO.</h2>
+          <h2 className="text-3xl font-black italic tracking-tighter uppercase text-black dark:text-xoxo-gold animate-pulse">XOXO.</h2>
           <div className="grid grid-cols-2 gap-10">
              <div className="space-y-4">
-              <p className="text-[10px] font-black uppercase tracking-widest">Explore</p>
-              {['Collection', 'Archives', 'About'].map(link => <p key={link} className="text-[10px] font-bold text-black/40 italic">{link}</p>)}
+              <p className="text-[10px] font-black uppercase tracking-widest text-black dark:text-xoxo-cream">Explore</p>
+              {['Collection', 'Archives', 'About'].map(link => <p key={link} className="text-[10px] font-bold text-black/40 dark:text-xoxo-cream/40 italic">{link}</p>)}
             </div>
           </div>
         </div>

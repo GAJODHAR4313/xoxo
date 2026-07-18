@@ -51,43 +51,43 @@ const Profile = () => {
       }
   };
 
-  if(loading) return <div className="min-h-screen pt-32 flex justify-center"><p className="font-black italic">LOADING...</p></div>;
-  if(!userData) return <div className="min-h-screen pt-32 flex justify-center"><p className="font-black italic text-red-500">Failed to load profile. Please try logging in again.</p></div>;
+  if(loading) return <div className="min-h-screen pt-32 bg-white dark:bg-xoxo-dark-bg flex justify-center text-black dark:text-xoxo-cream transition-colors duration-300"><p className="font-black italic">LOADING...</p></div>;
+  if(!userData) return <div className="min-h-screen pt-32 bg-white dark:bg-xoxo-dark-bg flex justify-center text-red-500 transition-colors duration-300"><p className="font-black italic text-red-500">Failed to load profile. Please try logging in again.</p></div>;
 
   return (
-    <div className="min-h-screen bg-white pt-24 pb-20 px-6 font-primary max-w-7xl mx-auto">
+    <div className="min-h-screen bg-white dark:bg-xoxo-dark-bg pt-24 pb-20 px-6 font-primary max-w-7xl mx-auto text-black dark:text-xoxo-cream transition-colors duration-300">
         <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter mb-10">My Profile</h1>
         
         <div className="flex flex-col md:flex-row gap-12">
             <div className="w-full md:w-64 flex flex-row md:flex-col gap-4 overflow-x-auto">
-                <button onClick={() => setActiveTab('orders')} className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 transition-colors ${activeTab === 'orders' ? 'bg-black text-white' : 'bg-zinc-100 text-black/50 hover:bg-zinc-200'}`}>
+                <button onClick={() => setActiveTab('orders')} className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 transition-colors ${activeTab === 'orders' ? 'bg-black dark:bg-xoxo-gold text-white dark:text-black border border-black dark:border-xoxo-gold' : 'bg-zinc-100 dark:bg-xoxo-dark-card text-black/50 dark:text-xoxo-cream/50 hover:bg-zinc-200 dark:hover:bg-xoxo-dark-bg border border-transparent dark:border-xoxo-dark-border'}`}>
                     <Package size={16}/> Orders
                 </button>
-                <button onClick={() => setActiveTab('addresses')} className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 transition-colors ${activeTab === 'addresses' ? 'bg-black text-white' : 'bg-zinc-100 text-black/50 hover:bg-zinc-200'}`}>
+                <button onClick={() => setActiveTab('addresses')} className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 transition-colors ${activeTab === 'addresses' ? 'bg-black dark:bg-xoxo-gold text-white dark:text-black border border-black dark:border-xoxo-gold' : 'bg-zinc-100 dark:bg-xoxo-dark-card text-black/50 dark:text-xoxo-cream/50 hover:bg-zinc-200 dark:hover:bg-xoxo-dark-bg border border-transparent dark:border-xoxo-dark-border'}`}>
                     <MapPin size={16}/> Addresses
                 </button>
-                <button onClick={() => setActiveTab('details')} className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 transition-colors ${activeTab === 'details' ? 'bg-black text-white' : 'bg-zinc-100 text-black/50 hover:bg-zinc-200'}`}>
+                <button onClick={() => setActiveTab('details')} className={`px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3 transition-colors ${activeTab === 'details' ? 'bg-black dark:bg-xoxo-gold text-white dark:text-black border border-black dark:border-xoxo-gold' : 'bg-zinc-100 dark:bg-xoxo-dark-card text-black/50 dark:text-xoxo-cream/50 hover:bg-zinc-200 dark:hover:bg-xoxo-dark-bg border border-transparent dark:border-xoxo-dark-border'}`}>
                     <UserIcon size={16}/> Details
                 </button>
             </div>
 
-            <div className="flex-1 bg-zinc-50 p-6 md:p-12 rounded-3xl border border-black/5">
+            <div className="flex-1 bg-zinc-50 dark:bg-xoxo-dark-card p-6 md:p-12 rounded-3xl border border-black/5 dark:border-xoxo-dark-border transition-colors duration-300">
                 {activeTab === 'orders' && (
                     <div className="space-y-6">
-                        <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-6">Order History</h2>
-                        {orders.length === 0 ? <p className="text-sm text-black/50">No orders yet.</p> : orders.map(o => (
-                            <div key={o._id} className="bg-white p-6 rounded-2xl border flex flex-col gap-4">
-                                <div className="flex justify-between items-center border-b border-black/5 pb-4">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-black/40">Order #{o._id.slice(-6)}</span>
-                                    <span className="text-[10px] font-black uppercase tracking-widest bg-zinc-100 px-3 py-1 rounded-full">{o.status}</span>
+                        <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-6 text-black dark:text-xoxo-cream">Order History</h2>
+                        {orders.length === 0 ? <p className="text-sm text-black/50 dark:text-xoxo-cream/50">No orders yet.</p> : orders.map(o => (
+                            <div key={o._id} className="bg-white dark:bg-xoxo-dark-bg p-6 rounded-2xl border border-black/10 dark:border-xoxo-dark-border flex flex-col gap-4">
+                                <div className="flex justify-between items-center border-b border-black/5 dark:border-xoxo-dark-border pb-4">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-xoxo-cream/40">Order #{o._id.toString().slice(-6)}</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest bg-zinc-100 dark:bg-xoxo-dark-card px-3 py-1 rounded-full text-black dark:text-xoxo-cream border border-transparent dark:border-xoxo-dark-border">{o.status}</span>
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold">{new Date(o.createdAt).toLocaleDateString()}</p>
-                                    <p className="text-xl font-black italic mt-1">₹{o.totalAmount.toLocaleString()}</p>
+                                    <p className="text-sm font-bold text-black dark:text-xoxo-cream">{new Date(o.createdAt).toLocaleDateString()}</p>
+                                    <p className="text-xl font-black italic mt-1 text-black dark:text-xoxo-cream">₹{o.totalAmount.toLocaleString()}</p>
                                 </div>
                                 <div className="flex gap-2 mt-2">
                                     {o.items.map((item, idx) => (
-                                        <img key={idx} src={item.image} alt="" className="w-12 h-12 rounded-lg object-cover bg-zinc-100 border"/>
+                                        <img key={idx} src={item.image} alt="" className="w-12 h-12 rounded-lg object-cover bg-zinc-100 dark:bg-xoxo-dark-card border border-black/10 dark:border-xoxo-dark-border"/>
                                     ))}
                                 </div>
                             </div>
@@ -97,42 +97,42 @@ const Profile = () => {
 
                 {activeTab === 'addresses' && (
                     <div className="space-y-8">
-                        <h2 className="text-2xl font-black uppercase italic tracking-tighter">Saved Addresses</h2>
+                        <h2 className="text-2xl font-black uppercase italic tracking-tighter text-black dark:text-xoxo-cream">Saved Addresses</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {userData.addresses?.map((addr, idx) => (
-                                <div key={idx} className="bg-white p-6 rounded-2xl border flex flex-col gap-2">
-                                    <p className="font-bold text-sm">{addr.street}</p>
-                                    <p className="text-xs text-black/50">{addr.city}, {addr.zip}</p>
+                                <div key={idx} className="bg-white dark:bg-xoxo-dark-bg p-6 rounded-2xl border border-black/10 dark:border-xoxo-dark-border flex flex-col gap-2">
+                                    <p className="font-bold text-sm text-black dark:text-xoxo-cream">{addr.street}</p>
+                                    <p className="text-xs text-black/50 dark:text-xoxo-cream/50">{addr.city}, {addr.zip}</p>
                                 </div>
                             ))}
                         </div>
-                        <form onSubmit={handleUpdateAddress} className="bg-white p-6 rounded-3xl border flex flex-col gap-4 mt-8">
-                            <h3 className="font-black text-xs uppercase tracking-widest mb-2">Add New Address</h3>
-                            <input name="street" placeholder="Street Address" className="p-4 bg-zinc-50 rounded-xl text-xs outline-none" required/>
+                        <form onSubmit={handleUpdateAddress} className="bg-white dark:bg-xoxo-dark-bg p-6 rounded-3xl border border-black/10 dark:border-xoxo-dark-border flex flex-col gap-4 mt-8">
+                            <h3 className="font-black text-xs uppercase tracking-widest mb-2 text-black dark:text-xoxo-cream">Add New Address</h3>
+                            <input name="street" placeholder="Street Address" className="p-4 bg-zinc-50 dark:bg-xoxo-dark-card border border-transparent dark:border-xoxo-dark-border rounded-xl text-xs outline-none text-black dark:text-xoxo-cream focus:border-xoxo-gold" required/>
                             <div className="grid grid-cols-2 gap-4">
-                                <input name="city" placeholder="City" className="p-4 bg-zinc-50 rounded-xl text-xs outline-none" required/>
-                                <input name="zip" placeholder="ZIP Code" className="p-4 bg-zinc-50 rounded-xl text-xs outline-none" required/>
+                                <input name="city" placeholder="City" className="p-4 bg-zinc-50 dark:bg-xoxo-dark-card border border-transparent dark:border-xoxo-dark-border rounded-xl text-xs outline-none text-black dark:text-xoxo-cream focus:border-xoxo-gold" required/>
+                                <input name="zip" placeholder="ZIP Code" className="p-4 bg-zinc-50 dark:bg-xoxo-dark-card border border-transparent dark:border-xoxo-dark-border rounded-xl text-xs outline-none text-black dark:text-xoxo-cream focus:border-xoxo-gold" required/>
                             </div>
-                            <button type="submit" className="bg-black text-white p-4 rounded-xl text-[10px] font-black uppercase tracking-widest mt-2">Save Address</button>
+                            <button type="submit" className="bg-black dark:bg-xoxo-gold text-white dark:text-black p-4 rounded-xl text-[10px] font-black uppercase tracking-widest mt-2 border border-transparent dark:border-white/10">Save Address</button>
                         </form>
                     </div>
                 )}
 
                 {activeTab === 'details' && (
                     <div className="space-y-6">
-                        <h2 className="text-2xl font-black uppercase italic tracking-tighter">Account Details</h2>
-                        <div className="bg-white p-6 rounded-3xl border space-y-4">
+                        <h2 className="text-2xl font-black uppercase italic tracking-tighter text-black dark:text-xoxo-cream">Account Details</h2>
+                        <div className="bg-white dark:bg-xoxo-dark-bg p-6 rounded-3xl border border-black/10 dark:border-xoxo-dark-border space-y-4">
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-black/40">Email</p>
-                                <p className="font-bold">{userData.email}</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-xoxo-cream/40">Email</p>
+                                <p className="font-bold text-black dark:text-xoxo-cream">{userData.email}</p>
                             </div>
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-black/40">Role</p>
-                                <p className="font-bold capitalize">{userData.role}</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-xoxo-cream/40">Role</p>
+                                <p className="font-bold capitalize text-black dark:text-xoxo-cream">{userData.role}</p>
                             </div>
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-black/40">Member Since</p>
-                                <p className="font-bold">2026</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-xoxo-cream/40">Member Since</p>
+                                <p className="font-bold text-black dark:text-xoxo-cream">2026</p>
                             </div>
                         </div>
                     </div>

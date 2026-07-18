@@ -27,7 +27,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
           <motion.div 
             initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} 
             transition={{ type: 'spring', damping: 25, stiffness: 200 }} 
-            className="fixed right-0 top-0 h-full w-full md:w-[450px] bg-white z-[300] p-6 sm:p-10 shadow-2xl flex flex-col"
+            className="fixed right-0 top-0 h-full w-full md:w-[450px] bg-white dark:bg-xoxo-dark-card text-black dark:text-xoxo-cream z-[300] p-6 sm:p-10 shadow-2xl flex flex-col transition-colors duration-300 border-l border-transparent dark:border-xoxo-dark-border"
           >
             <div className="flex justify-between items-center mb-8 sm:mb-12">
               <h2 className="text-3xl font-black italic uppercase tracking-tighter">Your Archive</h2>
@@ -39,24 +39,24 @@ const CartDrawer = ({ isOpen, onClose }) => {
             <div className="flex-1 overflow-y-auto no-scrollbar space-y-8">
               {cartItems.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center opacity-20 italic">
-                  <p className="text-[10px] font-black uppercase tracking-[0.5em]">Archive is empty</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.5em] text-neutral-400 dark:text-zinc-500">Archive is empty</p>
                 </div>
               ) : (
                 cartItems.map((item, idx) => (
-                  <div key={`${item._id}-${item.selectedSize || ''}-${idx}`} className="flex gap-6 items-start border-b border-black/5 pb-6">
-                    <div className={`w-24 h-28 ${item.color || 'bg-neutral-100'} rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden`}>
+                  <div key={`${item._id}-${item.selectedSize || ''}-${idx}`} className="flex gap-6 items-start border-b border-black/5 dark:border-xoxo-dark-border pb-6">
+                    <div className={`w-24 h-28 ${item.color || 'bg-neutral-100 dark:bg-xoxo-dark-bg'} rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden border border-transparent dark:border-xoxo-dark-border`}>
                        {item.image ? (
-                         <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                        ) : (
-                         <span className="text-[8px] font-black opacity-10 italic uppercase">No Image</span>
+                          <span className="text-[8px] font-black opacity-10 italic uppercase">No Image</span>
                        )}
                     </div>
 
                     <div className="flex-1">
-                      <h4 className="text-[12px] font-black uppercase italic tracking-tight">
+                      <h4 className="text-[12px] font-black uppercase italic tracking-tight text-black dark:text-xoxo-cream">
                         {item.name} {item.selectedSize && `(${item.selectedSize})`}
                       </h4>
-                      <p className="text-[10px] font-bold opacity-30 mt-1 uppercase tracking-widest">{item.category || 'Apparel'}</p>
+                      <p className="text-[10px] font-bold opacity-30 mt-1 uppercase tracking-widest text-neutral-500 dark:text-zinc-400">{item.category || 'Apparel'}</p>
                       <div className="flex justify-between items-end mt-4">
                         <p className="text-[11px] font-black italic">
                           ₹{Number(item.price).toLocaleString()} 
@@ -77,15 +77,15 @@ const CartDrawer = ({ isOpen, onClose }) => {
 
             {cartItems.length > 0 && (
               <div className="pt-10 space-y-6">
-                <div className="flex justify-between items-end border-t-2 border-black pt-6">
-                  <span className="text-[10px] font-black uppercase tracking-widest opacity-40 italic">Subtotal</span>
+                <div className="flex justify-between items-end border-t-2 border-black dark:border-xoxo-gold pt-6">
+                  <span className="text-[10px] font-black uppercase tracking-widest opacity-40 dark:opacity-60 italic">Subtotal</span>
                   <span className="text-2xl font-black italic">₹{total.toLocaleString()}</span>
                 </div>
                 
                 <Link 
                   to="/checkout" 
                   onClick={onClose} 
-                  className="w-full bg-black text-white py-6 text-[11px] font-black uppercase tracking-[0.3em] hover:bg-neutral-800 transition-all italic shadow-xl text-center block"
+                  className="w-full bg-black dark:bg-xoxo-gold text-white dark:text-black py-6 text-[11px] font-black uppercase tracking-[0.3em] hover:bg-neutral-800 dark:hover:opacity-90 transition-all italic shadow-xl text-center block border border-transparent dark:border-white/10"
                 >
                   Proceed to Checkout
                 </Link>

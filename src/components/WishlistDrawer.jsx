@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Heart, ShoppingBag, Trash2 } from 'lucide-react';
+import { X, Heart, ShoppingBag } from 'lucide-react';
 import { useCart } from '../Context/cartContext';
 
 const WishlistDrawer = ({ isOpen, onClose }) => {
@@ -17,14 +17,14 @@ const WishlistDrawer = ({ isOpen, onClose }) => {
           <motion.div 
             initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-white z-[300] shadow-2xl flex flex-col"
+            className="fixed right-0 top-0 h-full w-full max-w-md bg-white dark:bg-xoxo-dark-card text-black dark:text-xoxo-cream z-[300] shadow-2xl flex flex-col transition-colors duration-300 border-l border-transparent dark:border-xoxo-dark-border"
           >
-            <div className="p-6 sm:p-8 border-b border-neutral-100 flex justify-between items-center">
+            <div className="p-6 sm:p-8 border-b border-neutral-100 dark:border-xoxo-dark-border flex justify-between items-center">
               <div>
                 <h2 className="text-2xl font-black italic uppercase tracking-tighter">Your Likes</h2>
-                <p className="text-[9px] font-bold opacity-30 uppercase tracking-[0.3em]">{wishlistItems.length} Saved Items</p>
+                <p className="text-[9px] font-bold opacity-30 uppercase tracking-[0.3em] text-neutral-400 dark:text-zinc-500">{wishlistItems.length} Saved Items</p>
               </div>
-              <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-full transition-colors"><X size={20} /></button>
+              <button onClick={onClose} className="p-2 hover:bg-neutral-100 dark:hover:bg-xoxo-dark-bg rounded-full transition-colors border border-transparent dark:hover:border-xoxo-dark-border"><X size={20} /></button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 sm:p-8 no-scrollbar">
@@ -36,17 +36,21 @@ const WishlistDrawer = ({ isOpen, onClose }) => {
               ) : (
                 <div className="space-y-8">
                   {wishlistItems.map((item) => (
-                    <div key={item.id} className="flex gap-6 group">
-                      <div className={`w-24 h-32 ${item.color || 'bg-neutral-100'} rounded-xl flex-shrink-0 flex items-center justify-center`}>
-                        <ShoppingBag size={20} className="opacity-10" />
+                    <div key={item._id || item.id} className="flex gap-6 group">
+                      <div className={`w-24 h-32 ${item.color || 'bg-neutral-100 dark:bg-xoxo-dark-bg'} rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden border border-transparent dark:border-xoxo-dark-border`}>
+                        {item.image ? (
+                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <ShoppingBag size={20} className="opacity-10" />
+                        )}
                       </div>
                       <div className="flex flex-col justify-center flex-1">
                         <h4 className="text-[12px] font-black uppercase italic tracking-tight">{item.name}</h4>
-                        <p className="text-[10px] font-bold opacity-30 italic mb-4">${item.price}</p>
+                        <p className="text-[10px] font-bold opacity-30 italic mb-4">₹{item.price}</p>
                         <div className="flex gap-4">
                           <button 
                             onClick={() => { addToCart(item); toggleWishlist(item); }}
-                            className="text-[9px] font-black uppercase border-b border-black pb-0.5 hover:opacity-50 transition-all"
+                            className="text-[9px] font-black uppercase border-b border-black dark:border-xoxo-gold pb-0.5 hover:opacity-50 transition-all text-black dark:text-xoxo-gold"
                           >
                             Add to Bag
                           </button>
