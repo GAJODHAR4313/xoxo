@@ -235,12 +235,12 @@ const Shop = () => {
                     </div>
                 )}
 
-                <div className="flex items-center justify-between border-t border-zinc-100 dark:border-xoxo-dark-border pt-6 mt-auto">
-                  <span className="text-3xl font-black italic tracking-tighter">₹{selectedProduct.price}</span>
+                 <div className="flex flex-col sm:flex-row gap-4 items-center sm:justify-between border-t border-zinc-100 dark:border-xoxo-dark-border pt-6 mt-auto">
+                  <span className="text-3xl font-black italic tracking-tighter text-center sm:text-left">₹{selectedProduct.price}</span>
                   <button
                     disabled={selectedProduct.stock <= 0}
                     onClick={() => handleAddToCart(selectedProduct)}
-                    className={`px-8 py-4 rounded-2xl font-black uppercase italic text-xs tracking-[0.2em] transition-all shadow-lg ${selectedProduct.stock <= 0 ? 'bg-zinc-100 dark:bg-xoxo-dark-bg text-zinc-300 dark:text-zinc-600 cursor-not-allowed' : 'bg-black dark:bg-xoxo-gold text-white dark:text-black hover:shadow-2xl hover:-translate-y-1 border border-transparent dark:border-white/10'}`}
+                    className={`w-full sm:w-auto px-8 py-4 rounded-2xl font-black uppercase italic text-xs tracking-[0.2em] transition-all shadow-lg ${selectedProduct.stock <= 0 ? 'bg-zinc-100 dark:bg-xoxo-dark-bg text-zinc-300 dark:text-zinc-600 cursor-not-allowed' : 'bg-black dark:bg-xoxo-gold text-white dark:text-black hover:shadow-2xl hover:-translate-y-1 border border-transparent dark:border-white/10'}`}
                   >
                     {selectedProduct.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
                   </button>
