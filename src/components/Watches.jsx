@@ -142,10 +142,10 @@ const Watches = () => {
       <AnimatePresence>
         {selectedWatch && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto"
+            className="fixed inset-0 z-[100] flex items-start md:items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto py-10"
             onClick={() => setSelectedWatch(null)}>
             <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 30 }}
-              className="bg-white dark:bg-xoxo-dark-card w-full max-w-5xl rounded-[24px] md:rounded-[40px] overflow-hidden flex flex-col md:flex-row relative shadow-2xl my-auto border border-black/5 dark:border-xoxo-dark-border text-black dark:text-xoxo-cream"
+              className="bg-white dark:bg-xoxo-dark-card w-full max-w-5xl rounded-[24px] md:rounded-[40px] overflow-hidden flex flex-col md:flex-row relative shadow-2xl my-4 md:my-auto border border-black/5 dark:border-xoxo-dark-border text-black dark:text-xoxo-cream"
               onClick={e => e.stopPropagation()}>
               <button onClick={() => setSelectedWatch(null)} className="absolute top-4 right-4 md:top-8 md:right-8 z-20 p-2.5 md:p-3 bg-white/50 dark:bg-xoxo-dark-bg/50 backdrop-blur-md md:bg-black md:dark:bg-xoxo-gold text-black dark:text-black md:text-white md:dark:text-black rounded-full hover:rotate-90 transition-all shadow-lg border border-transparent dark:border-xoxo-dark-border">
                 <X size={20} />

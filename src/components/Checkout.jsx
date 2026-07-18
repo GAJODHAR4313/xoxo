@@ -168,7 +168,7 @@ const Checkout = () => {
         </div>
 
         <div className="relative animate-fade-in">
-          <div className="sticky top-28 md:top-40 bg-black dark:bg-xoxo-dark-card text-white dark:text-xoxo-cream p-6 sm:p-12 rounded-[24px] sm:rounded-[40px] shadow-2xl border border-transparent dark:border-xoxo-dark-border transition-colors duration-300">
+          <div className="sticky lg:top-40 top-4 bg-black dark:bg-xoxo-dark-card text-white dark:text-xoxo-cream p-6 sm:p-12 rounded-[24px] sm:rounded-[40px] shadow-2xl border border-transparent dark:border-xoxo-dark-border transition-colors duration-300">
             <h2 className="text-[12px] font-black uppercase tracking-[0.4em] mb-10 border-b border-white/10 dark:border-xoxo-dark-border pb-4">Summary</h2>
             
             <div className="space-y-6 mb-8">
