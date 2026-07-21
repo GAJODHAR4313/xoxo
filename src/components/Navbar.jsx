@@ -20,6 +20,8 @@ const Navbar = ({ onOpenSignUp, onOpenAdminLogin, onOpenCart, onOpenWishlist, us
     return acc + (price * item.qty);
   }, 0);
 
+  const totalQty = cartItems.reduce((acc, item) => acc + item.qty, 0);
+
   const wishCount = wishlistItems.length;
 
   useEffect(() => {
@@ -60,32 +62,32 @@ const Navbar = ({ onOpenSignUp, onOpenAdminLogin, onOpenCart, onOpenWishlist, us
     <header className={`w-full sticky top-0 z-50 transition-all duration-500 font-primary border-b border-black/5 dark:border-xoxo-dark-border ${
       scrolled ? 'bg-white/80 dark:bg-xoxo-dark-bg/85 backdrop-blur-2xl shadow-md' : 'bg-white dark:bg-xoxo-dark-bg'
     }`}>
-      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-8">
-        <div className="flex-1 lg:hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-2 sm:gap-8">
+        <div className="flex-1 basis-0 flex items-center justify-start min-w-0">
           <button 
             onClick={() => setIsMobileMenuOpen(true)} 
-            className="text-black/70 dark:text-xoxo-cream/70 hover:text-black dark:hover:text-xoxo-cream p-2 hover:bg-black/5 dark:hover:bg-xoxo-dark-card rounded-full transition-colors focus:outline-none"
+            className="lg:hidden text-black/70 dark:text-xoxo-cream/70 hover:text-black dark:hover:text-xoxo-cream p-1.5 sm:p-2 hover:bg-black/5 dark:hover:bg-xoxo-dark-card rounded-full transition-colors focus:outline-none"
           >
             <Menu className="w-6 h-6" />
           </button>
+
+          <div className="hidden lg:block w-full">
+            <motion.div animate={{ width: isSearchFocused ? '105%' : '100%' }} className="relative group max-w-[280px]">
+              <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={handleSearch} onFocus={() => setIsSearchFocused(true)} onBlur={() => setIsSearchFocused(false)} className="w-full bg-black/5 dark:bg-xoxo-dark-card py-2.5 px-10 rounded-full outline-none text-sm border border-transparent focus:bg-white dark:focus:bg-xoxo-dark-bg focus:border-black/10 dark:focus:border-xoxo-dark-border dark:text-xoxo-cream transition-all placeholder:text-black/30 dark:placeholder:text-xoxo-cream/30" />
+              <Search className="absolute left-3.5 top-3 text-black/50 dark:text-xoxo-cream/50 w-4 h-4" />
+            </motion.div>
+          </div>
         </div>
 
-        <div className="flex-1 hidden lg:block">
-          <motion.div animate={{ width: isSearchFocused ? '105%' : '100%' }} className="relative group max-w-[280px]">
-            <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={handleSearch} onFocus={() => setIsSearchFocused(true)} onBlur={() => setIsSearchFocused(false)} className="w-full bg-black/5 dark:bg-xoxo-dark-card py-2.5 px-10 rounded-full outline-none text-sm border border-transparent focus:bg-white dark:focus:bg-xoxo-dark-bg focus:border-black/10 dark:focus:border-xoxo-dark-border dark:text-xoxo-cream transition-all placeholder:text-black/30 dark:placeholder:text-xoxo-cream/30" />
-            <Search className="absolute left-3.5 top-3 text-black/50 dark:text-xoxo-cream/50 w-4 h-4" />
-          </motion.div>
-        </div>
-
-        <div className="flex-none">
+        <div className="flex-none flex justify-center items-center">
           <Link to="/">
-            <div className="h-10 w-32 flex items-center justify-center">
+            <div className="h-10 w-28 sm:w-32 flex items-center justify-center">
               <img src="/Xoxo.png" alt="XOXO" className="h-full w-full object-contain dark:invert" />
             </div>
           </Link>
         </div>
 
-        <div className="flex-1 flex items-center justify-end gap-3 md:gap-6">
+        <div className="flex-1 basis-0 flex items-center justify-end gap-2 sm:gap-3 md:gap-6 min-w-0">
           {user ? (
             <div className="hidden lg:flex items-center gap-6">
               {user.role === 'admin' && (
@@ -116,17 +118,29 @@ const Navbar = ({ onOpenSignUp, onOpenAdminLogin, onOpenCart, onOpenWishlist, us
               <User className="w-5 h-5 text-black/70 dark:text-xoxo-cream/70 cursor-pointer hover:text-black dark:hover:text-xoxo-cream transition-colors" onClick={onOpenSignUp} />
             </div>
           )}
-          <div className="relative cursor-pointer group" onClick={onOpenWishlist}>
+          <div className="relative cursor-pointer group p-1" onClick={onOpenWishlist}>
             <Heart className={`w-5 h-5 ${wishCount > 0 ? 'fill-black text-black dark:fill-xoxo-gold dark:text-xoxo-gold' : 'text-black/70 dark:text-xoxo-cream/70'}`} />
+            {wishCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 bg-red-600 dark:bg-black dark:text-xoxo-gold text-white text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center border border-white dark:border-xoxo-gold">
+                {wishCount}
+              </span>
+            )}
           </div>
 
           <button onClick={toggleTheme} className="p-2 hover:bg-black/5 dark:hover:bg-xoxo-dark-card rounded-full transition-colors" aria-label="Toggle Theme">
             {theme === 'dark' ? <Sun size={18} className="text-xoxo-gold" /> : <Moon size={18} className="text-black/70" />}
           </button>
 
-          <button onClick={onOpenCart} className="relative flex items-center gap-2 px-4 py-2 bg-black dark:bg-xoxo-gold text-white dark:text-black hover:bg-neutral-900 dark:hover:bg-xoxo-gold-hover rounded-full active:scale-95 transition-all duration-300 border border-transparent dark:border-white/10">
-            <ShoppingBag className="w-4 h-4" />
-            <span className="text-xs font-bold">₹{totalPrice.toLocaleString()}</span>
+          <button onClick={onOpenCart} className="relative flex items-center gap-2 px-3 py-2 sm:px-4 bg-black dark:bg-xoxo-gold text-white dark:text-black hover:bg-neutral-900 dark:hover:bg-xoxo-gold-hover rounded-full active:scale-95 transition-all duration-300 border border-transparent dark:border-white/10">
+            <div className="relative">
+              <ShoppingBag className="w-4 h-4" />
+              {totalQty > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-600 dark:bg-black dark:text-xoxo-gold text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-white dark:border-xoxo-gold">
+                  {totalQty}
+                </span>
+              )}
+            </div>
+            <span className="text-xs font-bold hidden sm:inline">₹{totalPrice.toLocaleString()}</span>
           </button>
         </div>
       </div>

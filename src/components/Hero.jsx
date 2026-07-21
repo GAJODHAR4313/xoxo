@@ -1,7 +1,95 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, Plus, Globe } from 'lucide-react';
+
+const YouTubeBackground = ({ videoId }) => {
+  const containerRef = useRef(null);
+  const playerRef = useRef(null);
+
+  useEffect(() => {
+    let intervalId;
+
+    const initPlayer = () => {
+      if (!window.YT || !window.YT.Player || !containerRef.current) return;
+      
+      playerRef.current = new window.YT.Player(containerRef.current, {
+        videoId: videoId,
+        playerVars: {
+          autoplay: 1,
+          mute: 1,
+          controls: 0,
+          showinfo: 0,
+          rel: 0,
+          modestbranding: 1,
+          playsinline: 1,
+          disablekb: 1,
+          fs: 0,
+          iv_load_policy: 3,
+          cc_load_policy: 0,
+        },
+        events: {
+          onReady: (event) => {
+            event.target.mute();
+            event.target.playVideo();
+
+            // Check every 250ms and seek back right before end to prevent loop play/pause spinner
+            intervalId = setInterval(() => {
+              const player = playerRef.current;
+              if (player && typeof player.getCurrentTime === 'function' && typeof player.getDuration === 'function') {
+                const currentTime = player.getCurrentTime();
+                const duration = player.getDuration();
+                if (duration > 2 && currentTime >= duration - 0.5) {
+                  player.seekTo(0.1, true);
+                }
+              }
+            }, 250);
+          },
+          onStateChange: (event) => {
+            if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) {
+              event.target.playVideo();
+            }
+          }
+        }
+      });
+    };
+
+    if (!window.YT || !window.YT.Player) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      if (firstScriptTag && firstScriptTag.parentNode) {
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      } else {
+        document.head.appendChild(tag);
+      }
+      const prevOnReady = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => {
+        if (prevOnReady) prevOnReady();
+        initPlayer();
+      };
+    } else {
+      initPlayer();
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+      if (playerRef.current && typeof playerRef.current.destroy === 'function') {
+        playerRef.current.destroy();
+      }
+    };
+  }, [videoId]);
+
+  return (
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+      {/* Absolute overlay at z-30 to completely block any mouse hover or click */}
+      <div className="absolute inset-0 z-30 bg-transparent pointer-events-auto" />
+      <div className="absolute w-[180%] h-[180%] sm:w-[150%] sm:h-[150%] md:w-[140%] md:h-[140%] pointer-events-none flex items-center justify-center">
+        <div ref={containerRef} className="w-full h-full object-cover grayscale-[10%] hover:grayscale-0 transition-all duration-1000" />
+      </div>
+    </div>
+  );
+};
 
 // Added 'onOpenArchive' prop here
 const Hero = ({ onOpenArchive }) => {
@@ -13,8 +101,8 @@ const Hero = ({ onOpenArchive }) => {
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 35 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       transition: {
         duration: 0.8,
@@ -61,11 +149,11 @@ const Hero = ({ onOpenArchive }) => {
         }
       `}</style>
 
-      {/* SECTION 1 HERO - Fixed height for mobile */}
-      <section className="relative w-full min-h-[90vh] md:h-[80vh] flex flex-col md:flex-row overflow-hidden bg-[#F2F0E9] dark:bg-xoxo-dark-card border-b border-black/5 dark:border-xoxo-dark-border transition-colors duration-300">
+      {/* SECTION 1 HERO - Slightly compact height */}
+      <section className="relative w-full min-h-[75vh] md:h-[68vh] flex flex-col md:flex-row overflow-hidden bg-[#F2F0E9] dark:bg-xoxo-dark-card border-b border-black/5 dark:border-xoxo-dark-border transition-colors duration-300">
 
         {/* LEFT */}
-        <div className="flex-1 flex flex-col justify-center px-6 sm:px-8 md:px-24 py-16 md:py-0">
+        <div className="flex-1 flex flex-col justify-center px-6 sm:px-8 md:px-24 py-12 sm:py-14 md:py-0">
 
           <motion.div
             variants={staggerContainer}
@@ -129,25 +217,14 @@ const Hero = ({ onOpenArchive }) => {
 
         </div>
 
-        {/* RIGHT VIDEO - Fixed to contain video */}
+        {/* RIGHT VIDEO - YouTube Embed via API */}
         <motion.div
           initial={{ clipPath: 'inset(0% 0% 0% 100%)' }}
           animate={{ clipPath: 'inset(0% 0% 0% 0%)' }}
           transition={{ duration: 1.2, ease: [0.77, 0, 0.175, 1] }}
-          className="flex-1 relative h-[30vh] md:h-full bg-gray-200 dark:bg-xoxo-dark-card"
+          className="flex-1 relative h-[30vh] md:h-full bg-gray-200 dark:bg-xoxo-dark-card overflow-hidden"
         >
-
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover grayscale-[10%] hover:grayscale-0 transition-all duration-1000"
-          >
-            <source src="/0305 (1).mov" type="video/quicktime" />
-            <source src="/0305 (1).mp4" type="video/mp4" />
-          </video>
-
+          <YouTubeBackground videoId="75nNqaNOYrs" />
         </motion.div>
 
       </section>
@@ -410,7 +487,7 @@ const Hero = ({ onOpenArchive }) => {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-10">
           <h2 className="text-3xl font-black italic tracking-tighter uppercase text-black dark:text-xoxo-gold animate-pulse">XOXO.</h2>
           <div className="grid grid-cols-2 gap-10">
-             <div className="space-y-4">
+            <div className="space-y-4">
               <p className="text-[10px] font-black uppercase tracking-widest text-black dark:text-xoxo-cream">Explore</p>
               {['Collection', 'Archives', 'About'].map(link => <p key={link} className="text-[10px] font-bold text-black/40 dark:text-xoxo-cream/40 italic">{link}</p>)}
             </div>
