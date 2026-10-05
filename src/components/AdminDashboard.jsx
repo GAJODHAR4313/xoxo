@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { TrendingUp, Package, Users, Tag, Trash2 } from 'lucide-react';
+import API_BASE_URL from '../config';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -9,11 +12,17 @@ const AdminDashboard = () => {
   const [smsData, setSmsData] = useState({ numbers: '', message: '' });
 
   const [form, setForm] = useState({
-    name: '', price: '', category: 'Tees', image: '', images: '',
-    detail: '', color: 'bg-zinc-100', sizes: '', stock: 0
+    name: '', price: '', section: '', category: '', image: '', images: '',
+    detail: '', color: 'bg-zinc-100', sizeStocks: {}
   });
+  const [sizeInput, setSizeInput] = useState('');
+  const [qtyInput, setQtyInput] = useState('');
 
   const [couponForm, setCouponForm] = useState({ code: '', discountPercent: 10 });
+  const [categories, setCategories] = useState([]);
+  const [categoryForm, setCategoryForm] = useState({ name: '', section: '' });
+  const [sections, setSections] = useState([]);
+  const [sectionForm, setSectionForm] = useState({ name: '' });
 
   useEffect(() => {
     const savedUser = JSON.parse(localStorage.getItem('user'));
@@ -26,20 +35,28 @@ const AdminDashboard = () => {
     fetchProducts();
     fetchCoupons();
     fetchAnalytics();
+    fetchCategories();
+    fetchSections();
   }, []);
 
-  const fetchOrders = async () => { try { const res = await axios.get(`${API_BASE_URL}/api/admin/orders`); setOrders(res.data); } catch (err) { console.error(err); } };
+  const fetchOrders = async () => { try { const token = localStorage.getItem('token'); const res = await axios.get(`${API_BASE_URL}/api/admin/orders`, { headers: { Authorization: `Bearer ${token}` } }); setOrders(res.data); } catch (err) { console.error(err); } };
   const fetchProducts = async () => { try { const res = await axios.get(`${API_BASE_URL}/api/products`); setProducts(res.data); } catch (err) { console.error(err); } };
-  const fetchCoupons = async () => { try { const res = await axios.get(`${API_BASE_URL}/api/admin/coupons`); setCoupons(res.data); } catch (err) { console.error(err); } };
-  const fetchAnalytics = async () => { try { const res = await axios.get(`${API_BASE_URL}/api/admin/analytics`); setAnalytics(res.data); } catch (err) { console.error(err); } };
+  const fetchCoupons = async () => { try { const token = localStorage.getItem('token'); const res = await axios.get(`${API_BASE_URL}/api/admin/coupons`, { headers: { Authorization: `Bearer ${token}` } }); setCoupons(res.data); } catch (err) { console.error(err); } };
+  const fetchAnalytics = async () => { try { const token = localStorage.getItem('token'); const res = await axios.get(`${API_BASE_URL}/api/admin/analytics`, { headers: { Authorization: `Bearer ${token}` } }); setAnalytics(res.data); } catch (err) { console.error(err); } };
+  const fetchSections = async () => { try { const res = await axios.get(`${API_BASE_URL}/api/sections`); setSections(res.data); } catch (err) { console.error(err); } };
+  const fetchCategories = async () => { try { const res = await axios.get(`${API_BASE_URL}/api/categories`); setCategories(res.data); } catch (err) { console.error(err); } };
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
+    const calculatedSizes = Object.keys(form.sizeStocks);
+    const calculatedStock = Object.values(form.sizeStocks).reduce((a, b) => a + b, 0);
+
     const payload = {
       ...form,
       images: typeof form.images === 'string' ? form.images.split(',').map(s => s.trim()).filter(Boolean) : form.images,
-      sizes: typeof form.sizes === 'string' ? form.sizes.split(',').map(s => s.trim().toUpperCase()).filter(Boolean) : form.sizes,
-      stock: parseInt(form.stock) || 0
+      sizes: calculatedSizes,
+      stock: calculatedStock,
+      sizeStocks: form.sizeStocks
     };
     if (payload.images.length === 0 && payload.image) {
       payload.images = [payload.image];
@@ -47,11 +64,12 @@ const AdminDashboard = () => {
       payload.image = payload.images[0];
     }
     try {
-      await axios.post(`${API_BASE_URL}/api/products/add`, payload);
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_BASE_URL}/api/products/add`, payload, { headers: { Authorization: `Bearer ${token}` } });
       alert("Product Added!");
       setForm({
-        name: '', price: '', category: 'Tees', image: '', images: '',
-        detail: '', color: 'bg-zinc-100', sizes: '', stock: 0
+        name: '', price: '', section: '', category: '', image: '', images: '',
+        detail: '', color: 'bg-zinc-100', sizeStocks: {}
       });
       fetchProducts();
       fetchAnalytics();
@@ -61,12 +79,13 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDeleteProduct = async (id) => { if (window.confirm("Delete Product?")) { await axios.delete(`${API_BASE_URL}/api/products/${id}`); fetchProducts(); fetchAnalytics(); } };
+  const handleDeleteProduct = async (id) => { if (window.confirm("Delete Product?")) { const token = localStorage.getItem('token'); await axios.delete(`${API_BASE_URL}/api/products/${id}`, { headers: { Authorization: `Bearer ${token}` } }); fetchProducts(); fetchAnalytics(); } };
 
   const handleAddCoupon = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_BASE_URL}/api/admin/coupons`, couponForm);
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_BASE_URL}/api/admin/coupons`, couponForm, { headers: { Authorization: `Bearer ${token}` } });
       alert("Coupon Created!");
       fetchCoupons();
       setCouponForm({ code: '', discountPercent: 10 });
@@ -75,16 +94,59 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDeleteCoupon = async (id) => { if (window.confirm("Delete Coupon?")) { await axios.delete(`${API_BASE_URL}/api/admin/coupons/${id}`); fetchCoupons(); } };
+  const handleDeleteCoupon = async (id) => { if (window.confirm("Delete Coupon?")) { const token = localStorage.getItem('token'); await axios.delete(`${API_BASE_URL}/api/admin/coupons/${id}`, { headers: { Authorization: `Bearer ${token}` } }); fetchCoupons(); } };
 
   const handleSendSMS = async () => {
     if (!smsData.numbers || !smsData.message) return alert("Enter details");
     try {
-      await axios.post(`${API_BASE_URL}/api/admin/send-sms`, smsData);
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_BASE_URL}/api/admin/send-sms`, smsData, { headers: { Authorization: `Bearer ${token}` } });
       alert("SMS Sent Successfully!");
       setSmsData({ numbers: '', message: '' });
     } catch (err) {
       alert("Failed to send SMS.");
+    }
+  };
+
+  const handleAddCategory = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_BASE_URL}/api/admin/categories`, categoryForm, { headers: { 'Authorization': `Bearer ${token}` }});
+      alert("Category Added!");
+      fetchCategories();
+      setCategoryForm({ name: '', type: 'Clothing' });
+    } catch (err) { alert("Failed to add category."); }
+  };
+
+  const handleDeleteCategory = async (id) => {
+    if (window.confirm("Delete Category?")) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.delete(`${API_BASE_URL}/api/admin/categories/${id}`, { headers: { 'Authorization': `Bearer ${token}` }});
+        fetchCategories();
+      } catch (err) { alert("Failed to delete category."); }
+    }
+  };
+
+  const handleAddSection = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${API_BASE_URL}/api/admin/sections`, sectionForm, { headers: { 'Authorization': `Bearer ${token}` }});
+      alert("Section Added!");
+      fetchSections();
+      setSectionForm({ name: '' });
+    } catch (err) { alert("Failed to add section."); }
+  };
+
+  const handleDeleteSection = async (id) => {
+    if (window.confirm("Delete Section?")) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.delete(`${API_BASE_URL}/api/admin/sections/${id}`, { headers: { 'Authorization': `Bearer ${token}` }});
+        fetchSections();
+      } catch (err) { alert("Failed to delete section."); }
     }
   };
 
@@ -96,6 +158,8 @@ const AdminDashboard = () => {
           <button onClick={() => setActiveTab('dashboard')} className={`p-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex-1 ${activeTab === 'dashboard' ? 'bg-white text-black' : 'hover:bg-white/10'}`}>Dashboard</button>
           <button onClick={() => setActiveTab('orders')} className={`p-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex-1 ${activeTab === 'orders' ? 'bg-white text-black' : 'hover:bg-white/10'}`}>Orders</button>
           <button onClick={() => setActiveTab('products')} className={`p-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex-1 ${activeTab === 'products' ? 'bg-white text-black' : 'hover:bg-white/10'}`}>Inventory</button>
+          <button onClick={() => setActiveTab('sections')} className={`p-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex-1 ${activeTab === 'sections' ? 'bg-white text-black' : 'hover:bg-white/10'}`}>Sections</button>
+          <button onClick={() => setActiveTab('categories')} className={`p-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex-1 ${activeTab === 'categories' ? 'bg-white text-black' : 'hover:bg-white/10'}`}>Categories</button>
           <button onClick={() => setActiveTab('coupons')} className={`p-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex-1 ${activeTab === 'coupons' ? 'bg-white text-black' : 'hover:bg-white/10'}`}>Coupons</button>
           <button onClick={() => setActiveTab('marketing')} className={`p-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex-1 ${activeTab === 'marketing' ? 'bg-white text-black' : 'hover:bg-white/10'}`}>Marketing</button>
         </div>
@@ -138,7 +202,7 @@ const AdminDashboard = () => {
                 <p className="font-black text-[10px] italic">{o.shippingDetails?.firstName || 'Customer'}</p>
                 <p className="text-[10px] text-black/50">₹{o.totalAmount} • {new Date(o.createdAt).toLocaleDateString()}</p>
               </div>
-              <select value={o.status} onChange={(e) => axios.put(`${API_BASE_URL}/api/admin/orders/${o._id}`, { status: e.target.value }).then(() => { fetchOrders(); fetchAnalytics(); })} className="bg-black text-white text-[9px] p-2 rounded-lg">
+              <select value={o.status} onChange={(e) => { const token = localStorage.getItem('token'); axios.put(`${API_BASE_URL}/api/admin/orders/${o._id}`, { status: e.target.value }, { headers: { Authorization: `Bearer ${token}` } }).then(() => { fetchOrders(); fetchAnalytics(); })}} className="bg-black text-white text-[9px] p-2 rounded-lg">
                 <option value="Processing">Processing</option><option value="Shipped">Shipped</option><option value="Delivered">Delivered</option>
               </select>
             </div>
@@ -150,29 +214,46 @@ const AdminDashboard = () => {
             <form onSubmit={handleAddProduct} className="bg-white p-6 rounded-3xl border grid grid-cols-1 sm:grid-cols-2 gap-4">
               <input placeholder="Name" value={form.name} className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({ ...form, name: e.target.value })} required />
               <input placeholder="Price" value={form.price} type="number" className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({ ...form, price: e.target.value })} required />
-              <select className="p-4 bg-zinc-50 rounded-xl text-xs font-bold" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
-                <optgroup label="Apparel & Accessories">
-                  <option value="Tees">Tees</option>
-                  <option value="Bottoms">Bottoms</option>
-                  <option value="Outerwear">Outerwear</option>
-                  <option value="Accessories">Accessories</option>
-                </optgroup>
-                <optgroup label="Footwear Brands">
-                  <option value="Nike">Nike</option>
-                  <option value="Adidas">Adidas</option>
-                  <option value="New Balance">New Balance</option>
-                  <option value="Asics">Asics</option>
-                </optgroup>
-                <optgroup label="Watches Brands">
-                  <option value="Rolex">Rolex</option>
-                  <option value="Omega">Omega</option>
-                  <option value="Cartier">Cartier</option>
-                  <option value="Seiko">Seiko</option>
-                  <option value="Casio">Casio</option>
-                </optgroup>
+              <select className="p-4 bg-zinc-50 rounded-xl text-xs font-bold" value={form.section} onChange={e => setForm({ ...form, section: e.target.value, category: '' })}>
+                <option value="">Select Section</option>
+                {sections.map(s => (
+                  <option key={s._id} value={s.name}>{s.name}</option>
+                ))}
               </select>
-              <input placeholder="Stock Quantity" value={form.stock} type="number" className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({ ...form, stock: e.target.value })} required />
-              <input placeholder="Sizes (comma separated: S, M, L)" value={form.sizes} className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({ ...form, sizes: e.target.value })} />
+              <select className="p-4 bg-zinc-50 rounded-xl text-xs font-bold" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
+                <option value="">Select Category</option>
+                {categories.filter(c => c.section === form.section).map(c => (
+                  <option key={c._id} value={c.name}>{c.name}</option>
+                ))}
+              </select>
+              <div className="sm:col-span-2 bg-zinc-50 p-4 rounded-xl space-y-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-black/50">Per-Size Inventory</p>
+                <div className="flex gap-2">
+                  <input placeholder="Size (e.g. S, M, XL)" value={sizeInput} className="p-3 bg-white border border-black/5 rounded-lg text-xs flex-1" onChange={e => setSizeInput(e.target.value)} />
+                  <input placeholder="Quantity" type="number" value={qtyInput} className="p-3 bg-white border border-black/5 rounded-lg text-xs flex-1" onChange={e => setQtyInput(e.target.value)} />
+                  <button type="button" onClick={() => {
+                    if (sizeInput && qtyInput) {
+                      setForm({ ...form, sizeStocks: { ...form.sizeStocks, [sizeInput.toUpperCase()]: parseInt(qtyInput) } });
+                      setSizeInput('');
+                      setQtyInput('');
+                    }
+                  }} className="bg-black text-white px-4 rounded-lg text-xs font-bold">+</button>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {Object.entries(form.sizeStocks).map(([size, qty]) => (
+                    <div key={size} className="bg-white border border-black/10 px-3 py-1.5 rounded-full flex items-center gap-2 text-[10px] font-black">
+                      <span>{size}: {qty}</span>
+                      <button type="button" onClick={() => {
+                        const newStocks = { ...form.sizeStocks };
+                        delete newStocks[size];
+                        setForm({ ...form, sizeStocks: newStocks });
+                      }} className="text-red-500 hover:text-red-700">✕</button>
+                    </div>
+                  ))}
+                  {Object.keys(form.sizeStocks).length === 0 && <span className="text-xs text-black/30 italic">No sizes added yet.</span>}
+                </div>
+              </div>
+
               <input placeholder="Main Image URL" value={form.image} className="p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setForm({ ...form, image: e.target.value })} required />
               <input placeholder="Extra Image URLs (comma separated)" value={form.images} className="p-4 bg-zinc-50 rounded-xl text-xs sm:col-span-2" onChange={e => setForm({ ...form, images: e.target.value })} />
               <textarea placeholder="Description" value={form.detail} className="p-4 bg-zinc-50 rounded-xl text-xs sm:col-span-2" onChange={e => setForm({ ...form, detail: e.target.value })} required />
@@ -191,6 +272,53 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   <button onClick={() => handleDeleteProduct(p._id)} className="p-2 bg-red-50 text-red-500 rounded-lg"><Trash2 size={14} /></button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'sections' && (
+          <div className="space-y-10">
+            <form onSubmit={handleAddSection} className="bg-white p-6 rounded-3xl border flex flex-col sm:flex-row gap-4">
+              <input placeholder="Section Name (e.g. Shop, Watches)" value={sectionForm.name} className="flex-1 p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setSectionForm({ ...sectionForm, name: e.target.value })} required />
+              <button type="submit" className="bg-black text-white px-8 py-4 rounded-xl font-black text-xs uppercase">Add Section</button>
+            </form>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {sections.map(s => (
+                <div key={s._id} className="bg-white p-6 rounded-3xl border flex flex-col gap-4 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4">
+                    <button onClick={() => handleDeleteSection(s._id)} className="text-red-500 hover:scale-110 transition-transform"><Trash2 size={16} /></button>
+                  </div>
+                  <span className="text-2xl font-black italic">{s.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'categories' && (
+          <div className="space-y-10">
+            <form onSubmit={handleAddCategory} className="bg-white p-6 rounded-3xl border flex flex-col sm:flex-row gap-4">
+              <input placeholder="Category Name (e.g. Shirts)" value={categoryForm.name} className="flex-1 p-4 bg-zinc-50 rounded-xl text-xs" onChange={e => setCategoryForm({ ...categoryForm, name: e.target.value })} required />
+              <select value={categoryForm.section} onChange={e => setCategoryForm({ ...categoryForm, section: e.target.value })} className="w-full sm:w-48 p-4 bg-zinc-50 rounded-xl text-xs font-bold" required>
+                <option value="">Select Section</option>
+                {sections.map(s => (
+                  <option key={s._id} value={s.name}>{s.name}</option>
+                ))}
+              </select>
+              <button type="submit" className="bg-black text-white px-8 py-4 rounded-xl font-black text-xs uppercase">Add</button>
+            </form>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {categories.map(c => (
+                <div key={c._id} className="bg-white p-6 rounded-3xl border flex flex-col gap-4 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4">
+                    <button onClick={() => handleDeleteCategory(c._id)} className="text-red-500 hover:scale-110 transition-transform"><Trash2 size={16} /></button>
+                  </div>
+                  <span className="text-2xl font-black italic">{c.name}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 bg-zinc-100 w-fit px-3 py-1 rounded-full">{c.section}</span>
                 </div>
               ))}
             </div>

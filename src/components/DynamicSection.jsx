@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, X, Heart, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Eye, X, Heart, Star, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { useCart } from '../Context/cartContext';
 import { useTheme } from '../Context/themeContext';
+import toast from 'react-hot-toast';
 import API_BASE_URL from '../config';
 
 
-const Shop = () => {
+const DynamicSection = () => {
+  const { sectionName } = useParams();
   const { theme } = useTheme();
   const [products, setProducts] = useState([]);
   const [dbCategories, setDbCategories] = useState([]);
@@ -23,28 +25,51 @@ const Shop = () => {
   const [selectedSize, setSelectedSize] = useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [reviewText, setReviewText] = useState("");
+  const [reviewImage, setReviewImage] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [zoomedImage, setZoomedImage] = useState(null);
+
+  const handleImageUpload = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+          if (file.size > 5 * 1024 * 1024) {
+              toast.error("Image size should be less than 5MB");
+              return;
+          }
+          const reader = new FileReader();
+          reader.onloadend = () => {
+              setReviewImage(reader.result);
+          };
+          reader.readAsDataURL(file);
+      }
+  };
 
   const fetchCategories = useCallback(async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/categories`);
-      setDbCategories(res.data.map(c => c.name));
+      const sectionCats = sectionName 
+        ? res.data.filter(c => c.section?.toLowerCase() === sectionName.toLowerCase())
+        : res.data;
+      setDbCategories(sectionCats.map(c => c.name));
     } catch (err) {
       console.error("Categories load error", err);
     }
-  }, []);
+  }, [sectionName]);
 
   const fetchProducts = useCallback(async () => {
     try {
-      const processed = res.data;
+      const res = await axios.get(`${API_BASE_URL}/api/products`);
+      const processed = sectionName
+        ? res.data.filter(p => p.section?.toLowerCase() === sectionName.toLowerCase())
+        : res.data;
       setProducts(processed);
     } catch (err) {
       console.error("Shop items load error", err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [sectionName]);
 
   useEffect(() => { fetchCategories(); fetchProducts(); }, [fetchCategories, fetchProducts]);
 
@@ -56,7 +81,7 @@ const Shop = () => {
   const handleAddToCart = async (product) => {
     if (product.stock <= 0) return;
     if (product.sizes && product.sizes.length > 0 && !selectedSize) {
-        alert("Please select a size first!");
+        toast.error("Please select a size first!");
         return;
     }
     const cartItem = { ...product, selectedSize };
@@ -68,25 +93,28 @@ const Shop = () => {
 
   const submitReview = async () => {
       const savedUser = JSON.parse(localStorage.getItem('user'));
-      if(!savedUser) return alert("Please login to review");
-      if(!reviewText.trim()) return alert("Enter review text");
+      if(!reviewText.trim()) {
+          toast.error("Enter review text");
+          return;
+      }
       setSubmittingReview(true);
       try {
-          const token = localStorage.getItem('token');
           const res = await axios.post(`${API_BASE_URL}/api/products/${selectedProduct._id}/reviews`, {
-              userId: savedUser.id || savedUser._id,
+              userId: savedUser ? (savedUser.id || savedUser._id) : 'guest',
+              name: savedUser ? (savedUser.firstName || savedUser.email) : 'Guest User',
               rating: reviewRating,
-              text: reviewText
-          }, {
-              headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+              text: reviewText,
+              image: reviewImage
           });
           const updated = res.data;
           setSelectedProduct(updated);
           setProducts(prev => prev.map(p => p._id === updated._id ? updated : p));
           setReviewText("");
+          setReviewImage("");
           setReviewRating(5);
+          toast.success("Review posted!");
       } catch(err) {
-          alert("Error submitting review");
+          toast.error("Error submitting review");
       } finally {
           setSubmittingReview(false);
       }
@@ -121,16 +149,24 @@ const Shop = () => {
 
       <main className="max-w-7xl mx-auto px-6 py-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
         {loading ? <Skeletons /> : filtered.map(p => {
-          const isLiked = wishlistItems?.some(w => w._id === p._id) || false;
-          return (
-            <div key={p._id} className="group relative">
-              {p.stock <= 0 ? (
-                <div className="absolute top-4 right-4 z-20 bg-red-600 text-white text-[8px] font-black px-2.5 py-1 uppercase tracking-widest rounded-full">SOLD OUT</div>
-              ) : p.stock < 5 ? (
-                <div className="absolute top-4 right-4 z-20 bg-orange-500 text-white text-[8px] font-black px-2.5 py-1 uppercase tracking-widest rounded-full">Only {p.stock} left</div>
-              ) : null}
-              <div className={`aspect-[3/4] ${p.color || 'bg-zinc-100 dark:bg-xoxo-dark-card'} rounded-2xl overflow-hidden flex items-center justify-center relative ${p.stock <= 0 ? 'grayscale opacity-50' : ''}`}>
-                <img src={p.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={p.name} />
+              const hasSecondImage = p.images && p.images.length > 0 && p.images[0] !== p.image;
+              const isLiked = wishlistItems?.some(w => w._id === p._id) || false;
+              return (
+                <div key={p._id} className="group relative">
+                  {p.stock <= 0 ? (
+                    <div className="absolute top-4 right-4 z-20 bg-red-600 text-white text-[8px] font-black px-2.5 py-1 uppercase tracking-widest rounded-full">SOLD OUT</div>
+                  ) : p.stock < 5 ? (
+                    <div className="absolute top-4 right-4 z-20 bg-orange-500 text-white text-[8px] font-black px-2.5 py-1 uppercase tracking-widest rounded-full">Only {p.stock} left</div>
+                  ) : null}
+                  <div className={`aspect-[3/4] ${p.color || 'bg-zinc-100 dark:bg-xoxo-dark-card'} rounded-2xl overflow-hidden flex items-center justify-center relative ${p.stock <= 0 ? 'grayscale opacity-50' : ''}`}>
+                    
+                    {/* Image Swap Logic */}
+                    <div className="w-full h-full relative">
+                      <img src={p.image} className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ${hasSecondImage ? 'group-hover:opacity-0' : 'group-hover:scale-110'}`} alt={p.name} />
+                      {hasSecondImage && (
+                        <img src={p.images[0]} className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" alt={`${p.name} alternate`} />
+                      )}
+                    </div>
                 
                 <button onClick={() => toggleWishlist(p)} className="absolute top-4 left-4 z-20 p-2 bg-white/80 dark:bg-xoxo-dark-card/85 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 transition-transform">
                   <Heart size={14} fill={isLiked ? "red" : "none"} color={isLiked ? "red" : (theme === 'dark' ? "#d4af37" : "black")} />
@@ -243,7 +279,16 @@ const Shop = () => {
                                     </div>
                                     <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500">{new Date(r.createdAt).toLocaleDateString()}</span>
                                 </div>
-                                <p className="text-sm font-medium">{r.text}</p>
+                                <p className="text-[9px] font-black uppercase tracking-widest text-black/50 dark:text-xoxo-cream/50 mb-1">{r.name || 'Guest User'}</p>
+                                <p className="text-sm font-medium mb-3">{r.text}</p>
+                                {r.image && (
+                                    <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-black/10 dark:border-white/10 mt-2 group/img cursor-zoom-in" onClick={() => setZoomedImage(r.image)}>
+                                        <img src={r.image} alt="Review" className="w-full h-full object-cover group-hover/img:scale-110 transition-transform duration-500" />
+                                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity">
+                                            <Maximize2 size={16} className="text-white" />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )) : <p className="text-xs text-zinc-400 dark:text-zinc-500 font-medium">No reviews yet. Be the first to review!</p>}
                     </div>
@@ -257,7 +302,21 @@ const Shop = () => {
                                 </button>
                             ))}
                         </div>
-                        <textarea value={reviewText} onChange={e=>setReviewText(e.target.value)} placeholder="Your review..." className="w-full p-4 rounded-xl text-xs outline-none bg-white dark:bg-xoxo-dark-card border border-black/5 dark:border-xoxo-dark-border text-black dark:text-xoxo-cream mb-4 resize-none h-24 focus:border-black dark:focus:border-xoxo-gold"/>
+                        <textarea value={reviewText} onChange={e=>setReviewText(e.target.value)} placeholder="Your review..." className="w-full p-4 rounded-xl text-xs outline-none bg-white dark:bg-xoxo-dark-card border border-black/5 dark:border-xoxo-dark-border text-black dark:text-xoxo-cream mb-2 resize-none h-24 focus:border-black dark:focus:border-xoxo-gold"/>
+                        
+                        <div className="mb-4">
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-black/60 dark:text-xoxo-cream/60 mb-2 cursor-pointer border border-dashed border-black/20 dark:border-white/20 p-4 rounded-xl text-center hover:border-black dark:hover:border-xoxo-gold transition-colors">
+                                {reviewImage ? 'Change Image' : 'Upload Image (Optional)'}
+                                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                            </label>
+                            {reviewImage && (
+                                <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-black/10 dark:border-white/10 mt-2">
+                                    <img src={reviewImage} alt="Preview" className="w-full h-full object-cover" />
+                                    <button onClick={() => setReviewImage("")} className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full text-[8px]">✕</button>
+                                </div>
+                            )}
+                        </div>
+
                         <button disabled={submittingReview} onClick={submitReview} className="bg-black dark:bg-xoxo-gold text-white dark:text-black px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50 border border-transparent dark:border-white/10">
                             {submittingReview ? 'Submitting...' : 'Submit Review'}
                         </button>
@@ -268,8 +327,24 @@ const Shop = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {zoomedImage && (
+        <div className="fixed inset-0 z-[600] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4" onClick={() => setZoomedImage(null)}>
+            <button onClick={() => setZoomedImage(null)} className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
+                <X size={32} />
+            </button>
+            <motion.img 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                src={zoomedImage} 
+                alt="Zoomed Review" 
+                className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl" 
+                onClick={(e) => e.stopPropagation()}
+            />
+        </div>
+      )}
     </div>
   );
 };
 
-export default Shop;
+export default DynamicSection;

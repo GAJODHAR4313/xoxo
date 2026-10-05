@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../Context/cartContext';
 import { motion } from 'framer-motion';
 import axios from 'axios';
+import toast from 'react-hot-toast';
+import Confetti from 'react-confetti';
 import API_BASE_URL from '../config';
 
 const Checkout = () => {
@@ -19,23 +21,15 @@ const Checkout = () => {
   const [couponCode, setCouponCode] = useState('');
   const [discountPercent, setDiscountPercent] = useState(0);
   const [applyingCoupon, setApplyingCoupon] = useState(false);
-  
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [windowDimension, setWindowDimension] = useState({ width: window.innerWidth, height: window.innerHeight });
+
+  const WHATSAPP_NUMBER = "919999999999"; // Replace with actual number
+
   useEffect(() => {
-      const fetchUser = async () => {
-          const savedUser = JSON.parse(localStorage.getItem('user'));
-          if(savedUser) {
-              try {
-                  const token = localStorage.getItem('token');
-                  const res = await axios.get(`${API_BASE_URL}/api/user/${savedUser.id || savedUser._id}`, {
-                      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-                  });
-                  setUserData(res.data.user);
-              } catch(e){
-                  console.error("Failed to fetch user data:", e);
-              }
-          }
-      };
-      fetchUser();
+    const handleResize = () => setWindowDimension({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const subTotal = cartItems.reduce((acc, item) => {
@@ -58,10 +52,12 @@ const Checkout = () => {
       try {
           const res = await axios.post(`${API_BASE_URL}/api/coupons/validate`, { code: couponCode });
           setDiscountPercent(res.data.discountPercent);
-          alert(`Coupon Applied! ${res.data.discountPercent}% OFF`);
+          toast.success(`Coupon Applied! ${res.data.discountPercent}% OFF`);
+          setShowConfetti(true);
+          setTimeout(() => setShowConfetti(false), 5000);
       } catch(err) {
           setDiscountPercent(0);
-          alert(err.response?.data?.message || "Invalid coupon");
+          toast.error(err.response?.data?.message || "Invalid coupon");
       } finally {
           setApplyingCoupon(false);
       }
@@ -79,30 +75,19 @@ const Checkout = () => {
   const handlePlaceOrder = async () => {
     if (cartItems.length === 0) return;
     if (!formData.email || !formData.phone || !formData.address) {
-        alert("Please fill in Email, Phone, and Address");
+        toast.error("Please fill in Email, Phone, and Address");
         return;
     }
 
     setLoading(true);
-    const savedUser = JSON.parse(localStorage.getItem('user'));
-    const userId = savedUser?.id || savedUser?._id;
-
-    if (!userId) {
-        alert("User not found. Please Login again.");
-        setLoading(false);
-        return;
-    }
 
     try {
-      const token = localStorage.getItem('token');
+      // Create order in backend for admin tracking
       const response = await fetch(`${API_BASE_URL}/api/orders/place`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            userId,
+            userId: 'guest',
             items: cartItems,
             totalAmount: finalTotal,
             discountAmount,
@@ -113,41 +98,56 @@ const Checkout = () => {
 
       if (response.ok) {
         const data = await response.json();
-        alert(`ORDER PLACED! ID: ${data.orderId}`);
+        
+        // Generate WhatsApp Message
+        let msg = `*New Order Placed (ID: ${data.orderId})*\n\n`;
+        msg += `*Customer Details:*\nName: ${formData.firstName} ${formData.lastName}\nPhone: ${formData.phone}\nAddress: ${formData.address}, ${formData.city}, ${formData.zip}\n\n`;
+        msg += `*Order Items:*\n`;
+        cartItems.forEach(item => {
+            msg += `- ${item.qty}x ${item.name} (${item.selectedSize}) - ₹${item.price}\n`;
+        });
+        msg += `\n*Total Amount: ₹${finalTotal}*`;
+
+        const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+        
+        // Clear cart
         setCartItems([]);
         localStorage.removeItem('localCart');
-        navigate("/orders"); 
+        
+        toast.success(`Order Saved! Redirecting to WhatsApp...`);
+        setTimeout(() => {
+          window.open(whatsappUrl, '_blank');
+          navigate("/"); 
+        }, 1000);
       } else {
         const errorData = await response.json();
-        alert(`Failed: ${errorData.message}`);
+        toast.error(`Failed: ${errorData.message}`);
       }
     } catch (error) {
-      alert("Network Error: Backend is not reachable");
+      toast.error("Network Error: Backend is not reachable");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="pt-28 md:pt-40 pb-20 px-4 sm:px-6 max-w-7xl mx-auto min-h-screen text-black dark:text-xoxo-cream transition-colors duration-300">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="pt-28 md:pt-40 pb-20 px-4 sm:px-6 max-w-7xl mx-auto min-h-screen text-black dark:text-xoxo-cream transition-colors duration-300 relative">
+      {showConfetti && (
+        <div className="fixed inset-0 z-[999] pointer-events-none">
+          <Confetti 
+            width={windowDimension.width} 
+            height={windowDimension.height} 
+            recycle={false} 
+            numberOfPieces={400} 
+            gravity={0.15}
+          />
+        </div>
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
         
         <div className="space-y-12">
           <h1 className="text-4xl sm:text-6xl font-black italic uppercase tracking-tighter mb-2">Checkout</h1>
-          
-          {userData?.addresses?.length > 0 && (
-              <div className="bg-zinc-50 dark:bg-xoxo-dark-card p-6 rounded-3xl border border-black/5 dark:border-xoxo-dark-border transition-colors duration-300">
-                  <p className="text-[10px] font-black uppercase tracking-widest mb-4 text-neutral-400 dark:text-zinc-500">Saved Addresses</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {userData.addresses.map((addr, i) => (
-                          <button key={i} onClick={() => handleAddressSelect(addr)} className="bg-white dark:bg-xoxo-dark-bg p-4 rounded-xl border border-black/10 dark:border-xoxo-dark-border text-left hover:border-black/50 dark:hover:border-xoxo-gold transition-colors text-black dark:text-xoxo-cream">
-                              <p className="font-bold text-xs">{addr.street}</p>
-                              <p className="text-[10px] text-black/50 dark:text-xoxo-cream/50 mt-1">{addr.city}, {addr.zip}</p>
-                          </button>
-                      ))}
-                  </div>
-              </div>
-          )}
+          {/* Removed saved addresses block since we don't have user profiles anymore */}
 
           <div className="space-y-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">

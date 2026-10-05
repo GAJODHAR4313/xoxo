@@ -10,7 +10,8 @@ const { authenticateToken, requireAdmin } = require('./middleware/auth');
 require('dotenv').config();
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cors());
 
 // Database Connection
@@ -32,7 +33,7 @@ const User = mongoose.model('User', new mongoose.Schema({
 }));
 
 const Product = mongoose.model('Product', new mongoose.Schema({
-    name: String, price: String, category: String, image: String,
+    name: String, price: String, section: String, category: String, image: String,
     images: { type: Array, default: [] },
     detail: String, color: { type: String, default: "bg-zinc-100" },
     sizes: { type: Array, default: [] },
@@ -54,6 +55,17 @@ const Coupon = mongoose.model('Coupon', new mongoose.Schema({
     code: { type: String, required: true, unique: true },
     discountPercent: { type: Number, required: true },
     isActive: { type: Boolean, default: true },
+    createdAt: { type: Date, default: Date.now }
+}));
+
+const Section = mongoose.model('Section', new mongoose.Schema({
+    name: { type: String, required: true, unique: true },
+    createdAt: { type: Date, default: Date.now }
+}));
+
+const Category = mongoose.model('Category', new mongoose.Schema({
+    name: { type: String, required: true },
+    section: { type: String, required: true }, // reference to Section name
     createdAt: { type: Date, default: Date.now }
 }));
 
@@ -85,6 +97,50 @@ app.post('/api/auth/login', async (req, res) => {
 app.get('/api/products', async (req, res) => {
     const products = await Product.find().sort({ createdAt: -1 });
     res.json(products);
+});
+
+app.get('/api/sections', async (req, res) => {
+    try {
+        const sections = await Section.find().sort({ createdAt: 1 });
+        res.json(sections);
+    } catch (err) { res.status(500).json({ message: "Error" }); }
+});
+
+app.post('/api/admin/sections', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const newSection = new Section(req.body);
+        await newSection.save();
+        res.status(201).json(newSection);
+    } catch (err) { res.status(500).json(err); }
+});
+
+app.delete('/api/admin/sections/:id', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        await Section.findByIdAndDelete(req.params.id);
+        res.json({ message: "Section deleted" });
+    } catch (err) { res.status(500).json({ message: "Error" }); }
+});
+
+app.get('/api/categories', async (req, res) => {
+    try {
+        const categories = await Category.find().sort({ createdAt: 1 });
+        res.json(categories);
+    } catch (err) { res.status(500).json({ message: "Error" }); }
+});
+
+app.post('/api/admin/categories', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const newCategory = new Category(req.body);
+        await newCategory.save();
+        res.status(201).json(newCategory);
+    } catch (err) { res.status(500).json(err); }
+});
+
+app.delete('/api/admin/categories/:id', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        await Category.findByIdAndDelete(req.params.id);
+        res.json({ message: "Category deleted" });
+    } catch (err) { res.status(500).json({ message: "Error" }); }
 });
 
 app.post('/api/products/add', authenticateToken, requireAdmin, async (req, res) => {
@@ -227,16 +283,13 @@ app.get('/api/orders/user/:userId', authenticateToken, async (req, res) => {
 });
 
 // --- PRODUCT REVIEWS ROUTE ---
-app.post('/api/products/:id/reviews', authenticateToken, async (req, res) => {
+app.post('/api/products/:id/reviews', async (req, res) => {
     try {
-        const { userId, rating, text } = req.body;
-        if (req.user.role !== 'admin' && req.user.id !== userId) {
-            return res.status(403).json({ message: "Access Denied: Cannot post review as another user" });
-        }
+        const { userId, name, rating, text, image } = req.body;
         const product = await Product.findById(req.params.id);
         if (!product) return res.status(404).json({ message: "Product not found" });
         
-        product.reviews.push({ userId, rating, text, createdAt: new Date() });
+        product.reviews.push({ userId: userId || 'guest', name: name || 'Guest User', rating, text, image: image || '', createdAt: new Date() });
         product.rating = product.reviews.reduce((acc, r) => acc + r.rating, 0) / product.reviews.length;
         
         await product.save();
@@ -311,13 +364,9 @@ app.get('/api/admin/analytics', authenticateToken, requireAdmin, async (req, res
 });
 
 // --- ORDER PLACE ROUTE ---
-app.post('/api/orders/place', authenticateToken, async (req, res) => {
+app.post('/api/orders/place', async (req, res) => {
     try {
         const { userId, items, totalAmount, shippingDetails, discountAmount, shippingFee } = req.body;
-        
-        if (req.user.role !== 'admin' && req.user.id !== userId) {
-            return res.status(403).json({ message: "Access Denied: Unauthorized order placement" });
-        }
 
         // Verify stock before placing order
         for (const item of items) {

@@ -1,19 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, User, Heart, ShoppingBag, Menu, Zap, LogOut, Package, ShieldCheck, UserMinus, X, Sun, Moon } from 'lucide-react';
+import axios from 'axios';
+import API_BASE_URL from '../config';
 import { useCart } from '../Context/cartContext';
 import { useTheme } from '../Context/themeContext';
 
-const Navbar = ({ onOpenSignUp, onOpenAdminLogin, onOpenCart, onOpenWishlist, user, onLogout }) => {
+const Navbar = ({ onOpenCart, onOpenWishlist, user, onLogout }) => {
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-  const { cartItems, wishlistItems, deleteUserAccount } = useCart();
+  const { cartItems, wishlistItems } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [sections, setSections] = useState([]);
 
   const totalPrice = cartItems.reduce((acc, item) => {
     const price = typeof item.price === 'string' ? parseFloat(item.price.replace(/,/g, '')) : item.price;
@@ -21,20 +24,39 @@ const Navbar = ({ onOpenSignUp, onOpenAdminLogin, onOpenCart, onOpenWishlist, us
   }, 0);
 
   const totalQty = cartItems.reduce((acc, item) => acc + item.qty, 0);
-
   const wishCount = wishlistItems.length;
+
+  const [isBouncing, setIsBouncing] = useState(false);
+  const prevQtyRef = useRef(totalQty);
+
+  useEffect(() => {
+    if (totalQty > prevQtyRef.current) {
+      setIsBouncing(true);
+      setTimeout(() => setIsBouncing(false), 300);
+    }
+    prevQtyRef.current = totalQty;
+  }, [totalQty]);
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
+
+    const fetchSections = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/sections`);
+        setSections(res.data);
+      } catch (err) {}
+    };
+    fetchSections();
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleSearch = (e) => {
     if (e.key === 'Enter' && searchQuery.trim() !== '') {
-      navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+      navigate(`/search?search=${encodeURIComponent(searchQuery.trim())}`);
       setIsMobileMenuOpen(false);
     }
   };
@@ -45,17 +67,12 @@ const Navbar = ({ onOpenSignUp, onOpenAdminLogin, onOpenCart, onOpenWishlist, us
     window.location.reload();
   };
 
-  const handleDeleteAccount = () => {
-    if(window.confirm("WARNING: Are you absolutely sure you want to terminate your account? All order history and data will be permanently deleted!")) {
-        deleteUserAccount();
-    }
-  };
-
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'Shop', path: '/shop' },
-    { name: 'Shoes', path: '/shoes' },
-    { name: 'Watches', path: '/watches' },
+    ...sections.map(s => ({
+      name: s.name,
+      path: `/section/${s.name.toLowerCase()}`
+    }))
   ];
 
   return (
@@ -87,51 +104,39 @@ const Navbar = ({ onOpenSignUp, onOpenAdminLogin, onOpenCart, onOpenWishlist, us
           </Link>
         </div>
 
-        <div className="flex-1 basis-0 flex items-center justify-end gap-2 sm:gap-3 md:gap-6 min-w-0">
-          {user ? (
-            <div className="hidden lg:flex items-center gap-6">
-              {user.role === 'admin' && (
+        <div className="flex-1 basis-0 flex items-center justify-end gap-4 sm:gap-6 md:gap-8 min-w-0">
+          {user && user.role === 'admin' ? (
+            <div className="hidden lg:flex items-center gap-6 mr-2">
                 <Link to="/xoxo-admin" className="flex flex-col items-center gap-1 group">
                   <ShieldCheck className="w-5 h-5 text-amber-500 group-hover:scale-110 transition-transform" />
                   <span className="text-[8px] font-black uppercase tracking-widest text-amber-600/60 dark:text-amber-500/60">Admin</span>
                 </Link>
-              )}
-              <Link to="/orders" className="flex flex-col items-center gap-1 group">
-                <Package className="w-5 h-5 text-black/70 dark:text-xoxo-cream/70 group-hover:text-black dark:group-hover:text-xoxo-cream transition-colors" />
-                <span className="text-[8px] font-black uppercase tracking-widest text-black/40 dark:text-xoxo-cream/40">Orders</span>
-              </Link>
-              <Link to="/profile" className="flex flex-col items-center gap-1 group">
-                <User className="w-5 h-5 text-black/70 dark:text-xoxo-cream/70 group-hover:text-black dark:group-hover:text-xoxo-cream transition-colors" />
-                <span className="text-[8px] font-black uppercase tracking-widest text-black/40 dark:text-xoxo-cream/40">Profile</span>
-              </Link>
-              <button onClick={handleDeleteAccount} className="flex flex-col items-center gap-1 group opacity-40 hover:opacity-100 transition-opacity">
-                <UserMinus className="w-5 h-5 text-red-600 group-hover:scale-110 transition-transform" />
-                <span className="text-[7px] font-black uppercase tracking-widest text-red-600/60">Terminate</span>
-              </button>
               <LogOut className="w-5 h-5 text-black dark:text-xoxo-cream cursor-pointer hover:scale-110 transition-transform" onClick={handleLogout} />
             </div>
           ) : (
-            <div className="hidden lg:flex items-center gap-6">
-              <button onClick={onOpenAdminLogin} className="opacity-20 hover:opacity-100 transition-opacity">
-                <ShieldCheck className="w-5 h-5 text-black dark:text-xoxo-cream" />
-              </button>
-              <User className="w-5 h-5 text-black/70 dark:text-xoxo-cream/70 cursor-pointer hover:text-black dark:hover:text-xoxo-cream transition-colors" onClick={onOpenSignUp} />
+            <div className="hidden lg:flex items-center">
+              {/* Normal users see nothing here */}
             </div>
           )}
-          <div className="relative cursor-pointer group p-1" onClick={onOpenWishlist}>
-            <Heart className={`w-5 h-5 ${wishCount > 0 ? 'fill-black text-black dark:fill-xoxo-gold dark:text-xoxo-gold' : 'text-black/70 dark:text-xoxo-cream/70'}`} />
-            {wishCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 bg-red-600 dark:bg-black dark:text-xoxo-gold text-white text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center border border-white dark:border-xoxo-gold">
-                {wishCount}
-              </span>
-            )}
+          <div className="flex items-center gap-3 sm:gap-5">
+            <div className="relative cursor-pointer group hover:scale-110 transition-transform" onClick={onOpenWishlist}>
+              <Heart className={`w-5 h-5 ${wishCount > 0 ? 'fill-black text-black dark:fill-xoxo-gold dark:text-xoxo-gold' : 'text-black/70 dark:text-xoxo-cream/70'}`} />
+              {wishCount > 0 && (
+                <span className="absolute -top-1 -right-1.5 bg-red-600 dark:bg-black dark:text-xoxo-gold text-white text-[8px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center border border-white dark:border-xoxo-gold">
+                  {wishCount}
+                </span>
+              )}
+            </div>
+
+            <button onClick={toggleTheme} className="hover:scale-110 transition-transform flex items-center" aria-label="Toggle Theme">
+              {theme === 'dark' ? <Sun size={20} className="text-xoxo-gold" /> : <Moon size={20} className="text-black/70" />}
+            </button>
           </div>
 
-          <button onClick={toggleTheme} className="p-2 hover:bg-black/5 dark:hover:bg-xoxo-dark-card rounded-full transition-colors" aria-label="Toggle Theme">
-            {theme === 'dark' ? <Sun size={18} className="text-xoxo-gold" /> : <Moon size={18} className="text-black/70" />}
-          </button>
-
-          <button onClick={onOpenCart} className="relative flex items-center gap-2 px-3 py-2 sm:px-4 bg-black dark:bg-xoxo-gold text-white dark:text-black hover:bg-neutral-900 dark:hover:bg-xoxo-gold-hover rounded-full active:scale-95 transition-all duration-300 border border-transparent dark:border-white/10">
+          <button 
+            onClick={onOpenCart} 
+            className={`relative flex items-center gap-2 px-3 py-2 sm:px-4 bg-black dark:bg-xoxo-gold text-white dark:text-black hover:bg-neutral-900 dark:hover:bg-xoxo-gold-hover rounded-full active:scale-95 transition-all duration-300 border border-transparent dark:border-white/10 ml-1 ${isBouncing ? 'animate-[bounce_0.3s_ease-in-out_2]' : ''}`}
+          >
             <div className="relative">
               <ShoppingBag className="w-4 h-4" />
               {totalQty > 0 && (
@@ -229,49 +234,27 @@ const Navbar = ({ onOpenSignUp, onOpenAdminLogin, onOpenCart, onOpenWishlist, us
               <div className="h-px bg-black/5 dark:bg-xoxo-dark-border my-2" />
 
               <div className="flex flex-col gap-6 py-6 mt-auto">
-                {user ? (
+                {user && user.role === 'admin' ? (
                   <>
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-black/30 dark:text-xoxo-cream/30">Logged In As</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-black/30 dark:text-xoxo-cream/30">Logged In As Admin</span>
                       <span className="text-xs font-bold text-black/70 dark:text-xoxo-cream/70 mt-1 truncate">{user.email}</span>
                     </div>
                     <div className="flex flex-col gap-4 mt-2">
-                      {user.role === 'admin' && (
                         <Link to="/xoxo-admin" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 py-2 text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-500 hover:text-amber-700 transition-colors">
                           <ShieldCheck className="w-5 h-5 text-amber-500" />
                           <span>Admin Dashboard</span>
                         </Link>
-                      )}
-                      <Link to="/orders" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 py-2 text-xs font-bold uppercase tracking-widest text-black/70 dark:text-xoxo-cream/70 hover:text-black dark:hover:text-xoxo-cream transition-colors">
-                        <Package className="w-5 h-5 text-black/70 dark:text-xoxo-cream/70" />
-                        <span>My Orders</span>
-                      </Link>
-                      <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 py-2 text-xs font-bold uppercase tracking-widest text-black/70 dark:text-xoxo-cream/70 hover:text-black dark:hover:text-xoxo-cream transition-colors">
-                        <User className="w-5 h-5 text-black/70 dark:text-xoxo-cream/70" />
-                        <span>My Profile</span>
-                      </Link>
                       <button onClick={() => { setIsMobileMenuOpen(false); handleLogout(); }} className="flex items-center gap-3 py-2 text-xs font-bold uppercase tracking-widest text-black/70 dark:text-xoxo-cream/70 hover:text-black dark:hover:text-xoxo-cream transition-colors text-left">
                         <LogOut className="w-5 h-5 text-black/70 dark:text-xoxo-cream/70" />
                         <span>Logout</span>
-                      </button>
-                      <button onClick={() => { setIsMobileMenuOpen(false); handleDeleteAccount(); }} className="flex items-center gap-3 py-2 text-xs font-bold uppercase tracking-widest text-red-600 hover:text-red-700 transition-colors text-left border-t border-black/5 dark:border-xoxo-dark-border pt-4">
-                        <UserMinus className="w-5 h-5 text-red-600" />
-                        <span>Terminate Account</span>
                       </button>
                     </div>
                   </>
                 ) : (
                   <>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-black/30 dark:text-xoxo-cream/30">Account</p>
                     <div className="flex flex-col gap-4">
-                      <button onClick={() => { setIsMobileMenuOpen(false); onOpenSignUp(); }} className="flex items-center gap-3 py-2.5 px-4 bg-black dark:bg-xoxo-gold text-white dark:text-black rounded-full text-xs font-bold uppercase tracking-widest justify-center active:scale-95 transition-all duration-300 border border-transparent dark:border-white/10">
-                        <User className="w-4 h-4" />
-                        <span>Sign In / Sign Up</span>
-                      </button>
-                      <button onClick={() => { setIsMobileMenuOpen(false); onOpenAdminLogin(); }} className="flex items-center gap-3 py-2 text-xs font-bold uppercase tracking-widest text-black/50 dark:text-xoxo-cream/50 hover:text-black dark:hover:text-xoxo-cream transition-colors justify-center">
-                        <ShieldCheck className="w-4 h-4" />
-                        <span>Admin Portal</span>
-                      </button>
+                      {/* Normal users see nothing in mobile menu account section now */}
                     </div>
                   </>
                 )}
